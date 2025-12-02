@@ -1158,7 +1158,7 @@
                 const dorms = await apiRequest('/dorms/available');
                 const div = document.getElementById('availableDorms');
                 div.innerHTML = dorms.map(d => {
-                    const canBook = !!d.dorm_id;
+                    const canBook = !!d.dorm_id && d.status === 'available';
                     return `
                     <div class="card" style="margin-bottom: 1rem;">
                         <h3>${d.building} - ${d.unit_number}</h3>
@@ -1167,7 +1167,7 @@
                         <p>Status: ${getStatusBadge(d.status)}</p>
                         ${canBook 
                             ? `<button class="btn btn-primary" onclick="bookDorm(${d.dorm_id})">Book Dorm</button>` 
-                            : `<button class="btn btn-secondary" disabled>Contact Housing Office to Book</button>`}
+                            : `<button class="btn btn-secondary" disabled>Unavailable</button>`}
                     </div>
                 `;
                 }).join('');
@@ -1266,7 +1266,7 @@
                 const jobs = await apiRequest('/employment/jobs');
                 const div = document.getElementById('employmentJobs');
                 div.innerHTML = jobs.map(j => {
-                    const canApply = !!j.job_id;
+                    const canApply = !!j.job_id && j.status === 'open';
                     return `
                     <div class="card" style="margin-bottom: 1rem;">
                         <h3>${j.job_title}</h3>
@@ -1278,7 +1278,7 @@
                         </p>
                         ${canApply 
                             ? `<button class="btn btn-primary" onclick="applyForJob(${j.job_id})">Apply</button>`
-                            : `<button class="btn btn-secondary" disabled>Contact HR to Apply</button>`}
+                            : `<button class="btn btn-secondary" disabled>Unavailable</button>`}
                     </div>
                 `;
                 }).join('');
