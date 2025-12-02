@@ -157,6 +157,34 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
+// Helper function to get absolute URL for uploaded files
+function getFileUrl(fileUrl) {
+    if (!fileUrl) return null;
+    
+    // If already an absolute URL (starts with http:// or https://), return as is
+    if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+        return fileUrl;
+    }
+    
+    // If it's a relative path starting with /api/uploads, construct absolute URL
+    if (fileUrl.startsWith('/api/uploads/')) {
+        // Get the base URL (without /api)
+        const API_BASE = window.API_BASE_URL || '/api';
+        const baseUrl = API_BASE.replace('/api', '');
+        
+        // If baseUrl is empty or just '/', use current origin
+        if (!baseUrl || baseUrl === '/') {
+            return window.location.origin + fileUrl;
+        }
+        
+        // Otherwise, construct from base URL
+        return baseUrl + fileUrl;
+    }
+    
+    // Default: return as is (might be a relative path)
+    return fileUrl;
+}
+
 // Make functions available globally
 window.formatDate = formatDate;
 window.formatTime = formatTime;
@@ -170,3 +198,4 @@ window.debounce = debounce;
 window.formatCurrency = formatCurrency;
 window.truncateText = truncateText;
 window.escapeHtml = escapeHtml;
+window.getFileUrl = getFileUrl;

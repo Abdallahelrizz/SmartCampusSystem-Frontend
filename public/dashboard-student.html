@@ -759,6 +759,12 @@
                 const issues = await apiRequest('/issues/my-issues');
                 const div = document.getElementById('myIssues');
                 if (issues.length > 0) {
+                    // Process issues to add proper image URLs
+                    const processedIssues = issues.map(i => ({
+                        ...i,
+                        imageUrl: i.file_url ? getFileUrl(i.file_url) : null
+                    }));
+                    
                     div.innerHTML = `
                         <table class="table">
                             <thead>
@@ -772,13 +778,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${issues.map(i => `
+                                ${processedIssues.map(i => `
                                     <tr>
                                         <td>#${i.issue_id}</td>
                                         <td>${i.category}</td>
                                         <td>${i.location}</td>
                                         <td>${getStatusBadge(i.status, 'issue')}</td>
-                                        <td>${i.file_url ? `<img src="${i.file_url}" alt="Issue photo" style="max-width: 100px; max-height: 100px; cursor: pointer; object-fit: cover; border-radius: 4px;" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span class=\\'text-muted\\'>Photo unavailable</span>';" onclick="window.open('${i.file_url}', '_blank')">` : '<span class="text-muted">No photo</span>'}</td>
+                                        <td>${i.imageUrl ? `<img src="${i.imageUrl}" alt="Issue photo" style="max-width: 100px; max-height: 100px; cursor: pointer; object-fit: cover; border-radius: 4px;" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span class=\\'text-muted\\'>Photo unavailable</span>';" onclick="window.open('${i.imageUrl}', '_blank')">` : '<span class="text-muted">No photo</span>'}</td>
                                         <td>${formatDate(i.created_at)}</td>
                                     </tr>
                                 `).join('')}
