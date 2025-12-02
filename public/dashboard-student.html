@@ -403,11 +403,17 @@
             loadSectionData(sectionName);
         }
         
-        // Set dashboard as active on load
-        window.addEventListener('DOMContentLoaded', () => {
+        // Set dashboard as active on load and load data
+        window.addEventListener('DOMContentLoaded', async () => {
             const dashboardLink = document.querySelector(`.nav-links a[onclick*="'dashboard'"]`);
             if (dashboardLink) {
                 dashboardLink.classList.add('active');
+            }
+            // Load dashboard data on page load
+            try {
+                await loadDashboard();
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
             }
         });
 
@@ -447,11 +453,23 @@
         // Load dashboard data
         async function loadDashboard() {
             try {
-                // Fetch fresh data from server
-                const bookings = await apiRequest('/bookings/my-bookings');
-                const issues = await apiRequest('/issues/my-issues');
-                const tickets = await apiRequest('/events/my/tickets');
-                const transportReservations = await apiRequest('/transportation/my/reservations').catch(() => []);
+                // Fetch fresh data from server - each call is independent so one failure doesn't block others
+                const bookings = await apiRequest('/bookings/my-bookings').catch(error => {
+                    console.error('Failed to load bookings:', error);
+                    return [];
+                });
+                const issues = await apiRequest('/issues/my-issues').catch(error => {
+                    console.error('Failed to load issues:', error);
+                    return [];
+                });
+                const tickets = await apiRequest('/events/my/tickets').catch(error => {
+                    console.error('Failed to load tickets:', error);
+                    return [];
+                });
+                const transportReservations = await apiRequest('/transportation/my/reservations').catch(error => {
+                    console.error('Failed to load transport reservations:', error);
+                    return [];
+                });
                 
                 // Count all active bookings (status active, including future ones)
                 const activeBookingsCount = bookings.filter(b => {

@@ -33,10 +33,13 @@ function isAuthenticated() {
 
 function getAuthHeaders() {
     const token = getAuthToken();
-    return {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
+    const headers = {
+        'Content-Type': 'application/json'
     };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
 }
 
 async function apiRequest(endpoint, options = {}) {
@@ -47,9 +50,14 @@ async function apiRequest(endpoint, options = {}) {
         ...options,
         headers: {
             ...(isFormData ? {} : getAuthHeaders()), // Don't set Content-Type for FormData
-            ...options.headers
+            ...options.headers // Allow overriding headers
         }
     };
+    
+    // Ensure Content-Type is set for JSON requests
+    if (!isFormData && !config.headers['Content-Type'] && !options.headers?.['Content-Type']) {
+        config.headers['Content-Type'] = 'application/json';
+    }
 
     // Add Authorization header separately for FormData
     if (isFormData) {
@@ -64,7 +72,10 @@ async function apiRequest(endpoint, options = {}) {
     }
 
     try {
+        console.log(`[API Request] ${options.method || 'GET'} ${url}`);
         const response = await fetch(url, config);
+        
+        console.log(`[API Response] ${response.status} ${response.statusText} for ${url}`);
         
         // Handle non-JSON responses
         let data;
@@ -73,16 +84,18 @@ async function apiRequest(endpoint, options = {}) {
             data = await response.json();
         } else {
             const text = await response.text();
+            console.error(`[API Error] Non-JSON response from ${url}:`, text);
             throw new Error(text || 'Request failed');
         }
 
         if (!response.ok) {
+            console.error(`[API Error] ${response.status} from ${url}:`, data);
             throw new Error(data.error || data.message || `Request failed with status ${response.status}`);
         }
 
         return data;
     } catch (error) {
-        console.error('API Error:', error);
+        console.error(`[API Error] ${options.method || 'GET'} ${url}:`, error);
         if (error.message) {
             throw error;
         }
