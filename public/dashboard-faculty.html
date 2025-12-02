@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - Smart Campus System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Smart Campus System</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('schedule')">Teaching Schedule</a></li>
+                <li><a href="#" onclick="showSection('bookings')">Bookings</a></li>
+                <li><a href="#" onclick="showSection('events')">Events</a></li>
+                <li><a href="#" onclick="showSection('announcements')">Announcements</a></li>
+                <li><a href="#" onclick="showSection('tutoring')">Tutoring</a></li>
+                <li><a href="#" onclick="showSection('issues')">Issues</a></li>
+                <li><a href="#" onclick="showSection('classroom-change')">Classroom Change</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="dashboard-header">
+                <h1>Welcome, <span id="userName"></span>!</h1>
+                <h3 style="font-size: 1rem; color: var(--gray); margin-top: 0.5rem; font-weight: normal;">ID: <span id="userUniversityId">-</span></h3>
+            </div>
+            <div class="dashboard-stats">
+                <div class="stat-card" onclick="showMyBookings()" style="cursor: pointer;">
+                    <div class="stat-value" id="myBookingsCount">0</div>
+                    <div class="stat-label">My Bookings</div>
+                </div>
+                <div class="stat-card" onclick="showMyEvents()" style="cursor: pointer;">
+                    <div class="stat-value" id="myEventsCount">0</div>
+                    <div class="stat-label">My Events</div>
+                </div>
+                <div class="stat-card" onclick="showPendingIssues()" style="cursor: pointer;">
+                    <div class="stat-value" id="pendingIssuesCount">0</div>
+                    <div class="stat-label">Pending Issues</div>
+                </div>
+                <div class="stat-card" onclick="showNotifications()" style="cursor: pointer;">
+                    <div class="stat-value" id="unreadNotifications">0</div>
+                    <div class="stat-label">Notifications</div>
+                </div>
+            </div>
+            
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Quick Actions</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1rem;">
+                    <button class="btn btn-primary" onclick="showSection('bookings'); openBookingModal()">Request Booking</button>
+                    <button class="btn btn-primary" onclick="showSection('events'); openEventModal()">Create Event</button>
+                    <button class="btn btn-primary" onclick="showSection('announcements'); openAnnouncementModal()">Post Announcement</button>
+                    <button class="btn btn-primary" onclick="showSection('tutoring'); openTutoringModal()">Create Tutoring Session</button>
+                    <button class="btn btn-primary" onclick="showSection('issues'); openIssueModal()">Report Issue</button>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Recent Announcements</div>
+                <div id="recentAnnouncements"></div>
+            </div>
+        </section>
+
+        <!-- Teaching Schedule Section -->
+        <section id="schedule" class="section" style="display: none;">
+            <h2>Teaching Schedule</h2>
+            <div class="card">
+                <div class="card-header" id="assignedClassesHeader">My Assigned Classes</div>
+                <div id="teachingSchedule"></div>
+            </div>
+        </section>
+
+        <!-- Bookings Section -->
+        <section id="bookings" class="section" style="display: none;">
+            <h2>Resource Booking</h2>
+            <div class="card">
+                <div class="card-header">Book a Resource</div>
+                <form id="bookingForm">
+                    <div class="form-group">
+                        <label class="form-label">Resource Type</label>
+                        <select id="resourceType" class="form-control">
+                            <option value="">All Types</option>
+                            <option value="classroom">Classroom</option>
+                            <option value="lab">Lab</option>
+                            <option value="sports_hall">Sports Hall</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="loadAvailableResources()">Search Resources</button>
+                </form>
+                <div id="availableResources" style="margin-top: 2rem;"></div>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Bookings</div>
+                <div id="myBookings"></div>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Override Student Bookings</div>
+                <div id="studentBookings"></div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="events" class="section" style="display: none;">
+            <h2>Event Management</h2>
+            <div class="card">
+                <div class="card-header">Create Academic Event</div>
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label class="form-label">Event Title</label>
+                        <input type="text" id="eventTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="eventDescription" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Event Type</label>
+                        <select id="eventType" class="form-control" required>
+                            <option value="seminar">Seminar</option>
+                            <option value="workshop">Workshop</option>
+                            <option value="academic">Academic Event</option>
+                            <option value="conference">Conference</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Start Date & Time</label>
+                        <input type="datetime-local" id="eventStart" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date & Time</label>
+                        <input type="datetime-local" id="eventEnd" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="eventLocation" class="form-control" placeholder="Building, Room Number">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Capacity</label>
+                        <input type="number" id="eventCapacity" class="form-control" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Event</button>
+                </form>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Events</div>
+                <div id="myEventsList"></div>
+            </div>
+        </section>
+
+        <!-- Announcements Section -->
+        <section id="announcements" class="section" style="display: none;">
+            <h2>Announcements</h2>
+            <div class="card">
+                <div class="card-header">Create Announcement</div>
+                <form id="announcementForm">
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" id="announcementTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea id="announcementMessage" class="form-control" rows="5" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select id="announcementPriority" class="form-control">
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Post Announcement</button>
+                </form>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Announcements</div>
+                <div id="myAnnouncements"></div>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Other Departments' Announcements</div>
+                <div id="otherAnnouncements"></div>
+            </div>
+        </section>
+
+        <!-- Tutoring Section -->
+        <section id="tutoring" class="section" style="display: none;">
+            <h2>Tutoring Sessions</h2>
+            <div class="card">
+                <div class="card-header">Create Tutoring Session</div>
+                <form id="tutoringForm">
+                    <div class="form-group">
+                        <label class="form-label">Course Code</label>
+                        <select id="courseCode" class="form-control" required>
+                            <option value="">Select Course</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tutor Name</label>
+                        <input type="text" id="tutorName" class="form-control" placeholder="Tutor name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tutor ID</label>
+                        <input type="text" id="tutorId" class="form-control" placeholder="Tutor ID" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Room</label>
+                        <select id="tutoringRoom" class="form-control" required>
+                            <option value="">Select Room</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" id="tutoringStartDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Day of Week</label>
+                        <select id="tutoringDay" class="form-control" required>
+                            <option value="">Select Day</option>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Time</label>
+                        <input type="time" id="tutoringTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Duration (hours)</label>
+                        <input type="number" id="tutoringDuration" class="form-control" min="0.5" max="4" step="0.5" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Capacity</label>
+                        <input type="number" id="tutoringCapacity" class="form-control" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="tutoringDescription" class="form-control" rows="3" placeholder="Topics covered, prerequisites, etc."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Session</button>
+                </form>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Tutoring Sessions</div>
+                <div id="myTutoringSessions"></div>
+            </div>
+        </section>
+
+        <!-- Issues Section -->
+        <section id="issues" class="section" style="display: none;">
+            <h2>Issue Reporting</h2>
+            <div class="card">
+                <div class="card-header">Report an Issue</div>
+                <form id="issueForm">
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="issueCategory" class="form-control" required>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="IT">IT</option>
+                            <option value="environmental">Environmental</option>
+                            <option value="equipment">Equipment</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="issueLocation" class="form-control" placeholder="Building, Room Number" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="issueDescription" class="form-control" rows="4" placeholder="Describe the issue in detail" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select id="issuePriority" class="form-control">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Attach Photo (Optional)</label>
+                        <input type="file" id="issueFile" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">You can attach a photo to help describe the issue</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Issue</button>
+                </form>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Reported Issues</div>
+                <div id="myIssues"></div>
+            </div>
+        </section>
+
+        <!-- Classroom Change Section -->
+        <section id="classroom-change" class="section" style="display: none;">
+            <h2>Classroom Change Requests</h2>
+            <div class="card">
+                <div class="card-header">Request Classroom Change</div>
+                <form id="classroomChangeForm">
+                    <div class="form-group">
+                        <label class="form-label">Select Your Class</label>
+                        <select id="facultyClass" class="form-control" required onchange="onFacultyClassSelected()">
+                            <option value="">Select Your Class</option>
+                        </select>
+                        <small style="color: var(--gray); font-size: 0.85rem;">Select one of your assigned classes first</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Current Classroom</label>
+                        <input type="text" id="currentClassroom" class="form-control" readonly>
+                        <small style="color: var(--gray); font-size: 0.85rem;">Automatically detected from your selected class</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Course Code</label>
+                        <input type="text" id="changeCourseCode" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Preferred New Classroom</label>
+                        <select id="newClassroom" class="form-control" required>
+                            <option value="">Select New Classroom</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Reason</label>
+                        <select id="changeReason" class="form-control" required>
+                            <option value="">Select Reason</option>
+                            <option value="recurring_issue">Recurring Issue with Current Room</option>
+                            <option value="capacity">Insufficient Capacity</option>
+                            <option value="equipment">Missing Required Equipment</option>
+                            <option value="accessibility">Accessibility Requirements</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Additional Details</label>
+                        <textarea id="changeDetails" class="form-control" rows="4" placeholder="Provide additional information about the change request"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </form>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Classroom Change Requests</div>
+                <div id="myClassroomChangeRequests"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modals -->
+    <div id="myBookingsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>My Bookings</h3>
+                <span class="modal-close" onclick="closeMyBookingsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="myBookingsList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeMyBookingsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="myEventsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>My Events</h3>
+                <span class="modal-close" onclick="closeMyEventsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="myEventsListModal"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeMyEventsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pendingIssuesModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Pending Issues</h3>
+                <span class="modal-close" onclick="closePendingIssuesModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="pendingIssuesList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePendingIssuesModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="otherAnnouncementModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Announcement Details</h3>
+                <span class="modal-close" onclick="closeOtherAnnouncementModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="otherAnnouncementModalContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeOtherAnnouncementModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notificationsModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Notifications</h3>
+                <span class="modal-close" onclick="closeNotificationsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="notificationsList"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeNotificationsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div id="announcementModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="announcementModalTitle">Announcement</h3>
+                <span class="modal-close" onclick="closeAnnouncementModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="announcementModalContent"></div>
+                <div style="margin-top: 1rem; color: var(--gray); font-size: 0.9rem;">
+                    <small id="announcementModalDate"></small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAnnouncementModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="bookingModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Book Resource</h3>
+                <span class="modal-close" onclick="closeBookingModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="bookingModalForm">
+                    <input type="hidden" id="modalResourceId">
+                    <div class="form-group">
+                        <label class="form-label">Start Time</label>
+                        <input type="datetime-local" id="modalStartTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Time</label>
+                        <input type="datetime-local" id="modalEndTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Purpose</label>
+                        <input type="text" id="modalPurpose" class="form-control" placeholder="General use" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeBookingModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitBookingModal()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        checkAuth();
+        const user = getCurrentUser();
+        // Capitalize first name and set ID
+        const firstName = (user.first_name || 'Faculty Member').charAt(0).toUpperCase() + (user.first_name || 'Faculty Member').slice(1).toLowerCase();
+        const userNameEl = document.getElementById('userName');
+        const userUniversityIdEl = document.getElementById('userUniversityId');
+        if (userNameEl) userNameEl.textContent = firstName;
+        if (userUniversityIdEl) userUniversityIdEl.textContent = user.university_id || '-';
+
+        // Show section
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionName).style.display = 'block';
+            
+            // Update active tab styling
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-links a[onclick*="'${sectionName}'"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            loadSectionData(sectionName);
+        }
+        
+        // Set dashboard as active on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const dashboardLink = document.querySelector(`.nav-links a[onclick*="'dashboard'"]`);
+            if (dashboardLink) {
+                dashboardLink.classList.add('active');
+            }
+        });
+
+        // Load section data
+        async function loadSectionData(section) {
+            if (section === 'dashboard') {
+                await loadDashboard();
+            } else if (section === 'schedule') {
+                await loadTeachingSchedule();
+            } else if (section === 'bookings') {
+                await loadMyBookings();
+                await loadStudentBookings();
+            } else if (section === 'events') {
+                await loadMyEvents();
+            } else if (section === 'announcements') {
+                await loadMyAnnouncements();
+                await loadOtherAnnouncements();
+            } else if (section === 'tutoring') {
+                await loadCourses();
+                await loadRooms();
+                await loadMyTutoringSessions();
+            } else if (section === 'issues') {
+                await loadMyIssues();
+            } else if (section === 'classroom-change') {
+                await loadClassroomChangeDropdowns();
+                await loadMyClassroomChangeRequests();
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const bookings = await apiRequest('/bookings/my-bookings').catch(() => []);
+                const events = await apiRequest('/events').catch(() => []);
+                const issues = await apiRequest('/issues/my-issues').catch(() => []);
+                const notifications = await apiRequest('/notifications').catch(() => []);
+                const announcements = await apiRequest('/faculty/announcements').catch(() => []);
+
+                // Update stats
+                document.getElementById('myBookingsCount').textContent = bookings.filter(b => b.status === 'active').length;
+                document.getElementById('myEventsCount').textContent = events.filter(e => e.organizer_user_id == user.user_id).length;
+                document.getElementById('pendingIssuesCount').textContent = issues.filter(i => i.status === 'pending').length;
+                document.getElementById('unreadNotifications').textContent = notifications.filter(n => !n.read).length;
+
+                // Load recent announcements
+                const recentAnnouncements = announcements.slice(0, 5);
+                const announcementsDiv = document.getElementById('recentAnnouncements');
+                if (recentAnnouncements.length > 0) {
+                    announcementsDiv.innerHTML = recentAnnouncements.map((a, index) => `
+                        <div class="card" style="margin-bottom: 1rem; cursor: pointer;" onclick="showAnnouncementModal(${index})">
+                            <h4>${a.title || 'Announcement'}</h4>
+                            <p>${(a.message || a.content || '').substring(0, 100)}${(a.message || a.content || '').length > 100 ? '...' : ''}</p>
+                            <small>${formatDate(a.created_at)}</small>
+                        </div>
+                    `).join('');
+                    // Store announcements globally for modal access
+                    window.recentAnnouncementsData = recentAnnouncements;
+                } else {
+                    announcementsDiv.innerHTML = '<p>No recent announcements</p>';
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Teaching Schedule
+        function getCurrentSemester() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // 1-12
+            const year = now.getFullYear();
+            
+            // Fall: September (9) - January (1)
+            // Spring: February (2) - May (5)
+            // Summer: June (6) - August (8)
+            if (month >= 9 || month <= 1) {
+                return `Fall ${month >= 9 ? year : year - 1}`;
+            } else if (month >= 2 && month <= 5) {
+                return `Spring ${year}`;
+            } else {
+                return `Summer ${year}`;
+            }
+        }
+
+        async function loadTeachingSchedule() {
+            try {
+                // Update header with current semester
+                const currentSemester = getCurrentSemester();
+                document.getElementById('assignedClassesHeader').textContent = `My Assigned Classes – ${currentSemester}`;
+                
+                // Mock teaching schedule data
+                const scheduleDiv = document.getElementById('teachingSchedule');
+                scheduleDiv.innerHTML = `
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Course Code</th>
+                                <th>Course Name</th>
+                                <th>Day</th>
+                                <th>Time</th>
+                                <th>Room</th>
+                                <th>Students</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>CS101</td>
+                                <td>Introduction to Computer Science</td>
+                                <td>Monday, Wednesday</td>
+                                <td>10:00 AM - 11:30 AM</td>
+                                <td>Nicol 520</td>
+                                <td>45</td>
+                            </tr>
+                            <tr>
+                                <td>CS201</td>
+                                <td>Data Structures</td>
+                                <td>Tuesday, Thursday</td>
+                                <td>2:00 PM - 3:30 PM</td>
+                                <td>Nicol 420</td>
+                                <td>38</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading teaching schedule:', error);
+            }
+        }
+
+        // Bookings
+        async function loadAvailableResources() {
+            const resourceType = document.getElementById('resourceType').value;
+            try {
+                // Map "classroom" to "study_room" for API call since classrooms are stored as study_room type
+                let apiResourceType = resourceType;
+                if (resourceType === 'classroom') {
+                    apiResourceType = 'study_room';
+                }
+                
+                let resources = await apiRequest(`/bookings/resources${apiResourceType ? `?resource_type=${apiResourceType}` : ''}`);
+                
+                // Get all active bookings to check availability (faculty can access this endpoint)
+                let bookings = [];
+                try {
+                    bookings = await apiRequest('/bookings/all');
+                } catch (error) {
+                    // If /bookings/all fails, try to get user's bookings and check availability differently
+                    console.log('Could not fetch all bookings, checking availability via my-bookings');
+                }
+                const now = new Date();
+                
+                // Filter resources for faculty: only show classrooms, labs (including computer labs), and sports halls
+                // Exclude study rooms and library seats
+                resources = resources.filter(r => {
+                    const type = r.resource_type;
+                    const name = (r.name || '').toLowerCase();
+                    
+                    // Always include labs and sports halls
+                    if (type === 'lab' || type === 'sports_hall') {
+                        return true;
+                    }
+                    
+                    // For study_room type, only include if it's actually a classroom (not a study room)
+                    if (type === 'study_room') {
+                        // Include if name contains "classroom", "lecture hall", or "seminar room"
+                        // Exclude if name contains "study room" (actual study rooms)
+                        return (name.includes('classroom') || name.includes('lecture hall') || name.includes('seminar room')) 
+                               && !name.includes('study room');
+                    }
+                    
+                    // Exclude everything else (library_seat, computer, etc.)
+                    return false;
+                });
+                
+                // If a specific type is selected, apply additional filtering
+                if (resourceType === 'classroom') {
+                    resources = resources.filter(r => {
+                        const name = (r.name || '').toLowerCase();
+                        return r.resource_type === 'study_room' && 
+                               (name.includes('classroom') || name.includes('lecture hall') || name.includes('seminar room')) &&
+                               !name.includes('study room');
+                    });
+                } else if (resourceType === 'lab') {
+                    resources = resources.filter(r => r.resource_type === 'lab');
+                } else if (resourceType === 'sports_hall') {
+                    resources = resources.filter(r => r.resource_type === 'sports_hall');
+                }
+                
+                // Check if each resource is currently booked
+                resources = resources.map(r => {
+                    const activeBooking = bookings.find(b => {
+                        if (b.resource_id != r.resource_id || b.status !== 'active') {
+                            return false;
+                        }
+                        const startTime = new Date(b.start_time);
+                        const endTime = new Date(b.end_time);
+                        return now >= startTime && now <= endTime;
+                    });
+                    return {
+                        ...r,
+                        isBooked: !!activeBooking,
+                        booking: activeBooking
+                    };
+                });
+                
+                const div = document.getElementById('availableResources');
+                if (resources.length > 0) {
+                    div.innerHTML = resources.map(r => {
+                        // Determine display type
+                        let displayType = r.resource_type;
+                        if (r.resource_type === 'study_room') {
+                            const name = (r.name || '').toLowerCase();
+                            if (name.includes('classroom')) displayType = 'Classroom';
+                            else if (name.includes('lecture hall')) displayType = 'Lecture Hall';
+                            else if (name.includes('seminar room')) displayType = 'Seminar Room';
+                        } else if (r.resource_type === 'lab') {
+                            displayType = 'Lab';
+                        } else if (r.resource_type === 'sports_hall') {
+                            displayType = 'Sports Hall';
+                        }
+                        
+                        const isUnavailable = r.isBooked || r.status === 'under_maintenance' || r.status === 'closed';
+                        
+                        return `
+                            <div class="card" style="margin-bottom: 1rem;">
+                                <h3>${r.name}</h3>
+                                <p>Type: ${displayType} | Building: ${r.building} | Capacity: ${r.capacity}</p>
+                                <p>Status: ${isUnavailable ? getStatusBadge(r.status === 'under_maintenance' ? 'under_maintenance' : r.status === 'closed' ? 'closed' : 'unavailable') : getStatusBadge(r.status)}</p>
+                                ${isUnavailable 
+                                    ? '<button class="btn btn-secondary" disabled>Unavailable</button>' 
+                                    : `<button class="btn btn-primary" onclick="bookResource(${r.resource_id})">Book This Resource</button>`
+                                }
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    div.innerHTML = '<p>No resources available</p>';
+                }
+            } catch (error) {
+                showAlert('Error loading resources', 'error');
+            }
+        }
+
+        let currentBookingResourceId = null;
+
+        function bookResource(resourceId) {
+            currentBookingResourceId = resourceId;
+            document.getElementById('modalResourceId').value = resourceId;
+            document.getElementById('modalStartTime').value = '';
+            document.getElementById('modalEndTime').value = '';
+            document.getElementById('modalPurpose').value = '';
+            document.getElementById('bookingModal').style.display = 'flex';
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+            document.getElementById('bookingModalForm').reset();
+            currentBookingResourceId = null;
+            // Clear any validation errors
+            document.getElementById('modalStartTime').setCustomValidity('');
+            document.getElementById('modalEndTime').setCustomValidity('');
+            document.getElementById('modalPurpose').setCustomValidity('');
+        }
+
+        async function submitBookingModal() {
+            const form = document.getElementById('bookingModalForm');
+            
+            // Check HTML5 validation first
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const startTime = document.getElementById('modalStartTime').value.trim();
+            const endTime = document.getElementById('modalEndTime').value.trim();
+            const purpose = document.getElementById('modalPurpose').value.trim() || 'General use';
+            const resourceId = currentBookingResourceId;
+
+            // Additional validation
+            if (!startTime || !endTime) {
+                showAlert('Please fill in both start time and end time', 'error');
+                document.getElementById('modalStartTime').focus();
+                return;
+            }
+
+            const startDate = new Date(startTime);
+            const endDate = new Date(endTime);
+            const now = new Date();
+
+            if (startDate >= endDate) {
+                showAlert('End time must be after start time', 'error');
+                document.getElementById('modalEndTime').focus();
+                return;
+            }
+
+            if (startDate < now) {
+                showAlert('Start time cannot be in the past', 'error');
+                document.getElementById('modalStartTime').focus();
+                return;
+            }
+
+            try {
+                const response = await apiRequest('/bookings/request', {
+                    method: 'POST',
+                    body: { resource_id: resourceId, start_time: startTime, end_time: endTime, purpose }
+                });
+                showAlert('Booking confirmed successfully', 'success');
+                closeBookingModal();
+                // Refresh both bookings list, resources list, and dashboard immediately
+                await loadMyBookings();
+                await loadAvailableResources();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to submit booking request', 'error');
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = ['bookingModal', 'myBookingsModal', 'myEventsModal', 'pendingIssuesModal', 'notificationsModal', 'announcementModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    if (modalId === 'bookingModal') closeBookingModal();
+                    else if (modalId === 'myBookingsModal') closeMyBookingsModal();
+                    else if (modalId === 'myEventsModal') closeMyEventsModal();
+                    else if (modalId === 'pendingIssuesModal') closePendingIssuesModal();
+                    else if (modalId === 'notificationsModal') closeNotificationsModal();
+                    else if (modalId === 'announcementModal') closeAnnouncementModal();
+                }
+            });
+        }
+
+        async function loadMyBookings() {
+            try {
+                const bookings = await apiRequest('/bookings/my-bookings');
+                const div = document.getElementById('myBookings');
+                console.log('Loaded bookings:', bookings); // Debug log
+                if (bookings.length > 0) {
+                    // Sort by start_time (most recent first)
+                    const sortedBookings = bookings.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Resource</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sortedBookings.map(b => `
+                                    <tr>
+                                        <td>${b.resource?.name || 'N/A'}</td>
+                                        <td>${formatDate(b.start_time)}</td>
+                                        <td>${formatDate(b.end_time)}</td>
+                                        <td>${getStatusBadge(b.status)}</td>
+                                        <td>
+                                            ${b.status === 'active' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.booking_id})">Cancel</button>` : ''}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No bookings found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                showAlert('Failed to load bookings: ' + (error.message || 'Unknown error'), 'error');
+            }
+        }
+
+        async function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                try {
+                    await apiRequest(`/bookings/cancel/${bookingId}`, { method: 'POST' });
+                    showAlert('Booking cancelled', 'success');
+                    loadMyBookings();
+                    loadDashboard(); // Refresh dashboard stats
+            } catch (error) {
+                showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function loadStudentBookings() {
+            try {
+                const bookings = await apiRequest('/bookings/all').catch(() => []);
+                const studentBookings = bookings.filter(b => b.user?.role === 'student' && b.status === 'active');
+                const div = document.getElementById('studentBookings');
+                if (studentBookings.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Resource</th>
+                                    <th>Student</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${studentBookings.map(b => `
+                                    <tr>
+                                        <td>${b.resource?.name || 'N/A'}</td>
+                                        <td>${b.user?.first_name || ''} ${b.user?.last_name || ''}</td>
+                                        <td>${formatDate(b.start_time)}</td>
+                                        <td>${formatDate(b.end_time)}</td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm" onclick="overrideBooking(${b.booking_id})">Override</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No student bookings to override</p>';
+                }
+            } catch (error) {
+                console.error('Error loading student bookings:', error);
+            }
+        }
+
+        async function overrideBooking(bookingId) {
+            if (confirm('Are you sure you want to override this student booking? The student will be notified.')) {
+                try {
+                    await apiRequest(`/faculty/bookings/${bookingId}/override`, { method: 'POST' });
+                    showAlert('Booking overridden successfully', 'success');
+                    await loadStudentBookings();
+                    await loadMyActiveBookings();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                try {
+                    await apiRequest(`/bookings/cancel/${bookingId}`, { method: 'POST' });
+                    showAlert('Booking cancelled', 'success');
+                    await loadMyActiveBookings();
+                    await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Events
+        document.getElementById('eventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const response = await apiRequest('/events', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        title: document.getElementById('eventTitle').value,
+                        description: document.getElementById('eventDescription').value,
+                        event_type: document.getElementById('eventType').value,
+                        start_time: document.getElementById('eventStart').value,
+                        end_time: document.getElementById('eventEnd').value,
+                        location: document.getElementById('eventLocation').value,
+                        capacity: parseInt(document.getElementById('eventCapacity').value)
+                    })
+                });
+                const status = response.event?.status || 'pending';
+                showAlert(`Event created successfully. Status: ${status.charAt(0).toUpperCase() + status.slice(1)}. ${status === 'pending' ? 'Waiting for admin approval.' : ''}`, 'success');
+                document.getElementById('eventForm').reset();
+                await loadMyEvents();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        async function loadMyEvents() {
+            try {
+                const events = await apiRequest('/events').catch(() => []);
+                const myEvents = events.filter(e => e.organizer_user_id == user.user_id);
+                const div = document.getElementById('myEventsList');
+                if (myEvents.length > 0) {
+                div.innerHTML = myEvents.map(e => {
+                    const organizerName = e.organizer_first_name && e.organizer_last_name 
+                        ? `${e.organizer_first_name} ${e.organizer_last_name}` 
+                        : 'Unknown Organizer';
+                    const statusBadge = e.status === 'pending' ? '<span style="color: var(--warning);">Pending</span>' 
+                        : e.status === 'approved' ? '<span style="color: var(--secondary);">Approved</span>' 
+                        : e.status === 'rejected' ? '<span style="color: var(--danger);">Rejected</span>' 
+                        : e.status;
+                    return `
+                    <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                        <h3>${e.title}</h3>
+                                    <p>${e.description || ''}</p>
+                                    <p><strong>Organized by:</strong> ${organizerName}</p>
+                                    <p><strong>Status:</strong> ${statusBadge}</p>
+                                    <p><strong>Type:</strong> ${e.event_type || 'Academic Event'}</p>
+                                    <p><strong>Date:</strong> ${formatDate(e.start_time)}</p>
+                                    <p><strong>Location:</strong> ${e.location || 'TBA'}</p>
+                                    <p><strong>Capacity:</strong> ${e.capacity}</p>
+                                </div>
+                                <div>
+                                    ${e.status === 'approved' ? `
+                                    <button class="btn btn-secondary btn-sm" onclick="editEvent(${e.event_id})">Edit</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteEvent(${e.event_id})">Delete</button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                    </div>
+                `;
+                }).join('');
+                } else {
+                    div.innerHTML = '<p>No events created</p>';
+                }
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+        }
+
+        async function editEvent(eventId) {
+            try {
+                const event = await apiRequest(`/events/${eventId}`);
+                document.getElementById('eventTitle').value = event.title;
+                document.getElementById('eventDescription').value = event.description || '';
+                document.getElementById('eventType').value = event.event_type || 'academic';
+                document.getElementById('eventStart').value = new Date(event.start_time).toISOString().slice(0, 16);
+                document.getElementById('eventEnd').value = new Date(event.end_time).toISOString().slice(0, 16);
+                document.getElementById('eventLocation').value = event.location || '';
+                document.getElementById('eventCapacity').value = event.capacity;
+                
+                showSection('events');
+                showAlert('Event loaded for editing. Update and submit to save changes.', 'info');
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function deleteEvent(eventId) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                try {
+                    await apiRequest(`/events/${eventId}`, { method: 'DELETE' });
+                    showAlert('Event deleted', 'success');
+                    await loadMyEvents();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Announcements
+        document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const announcementData = {
+                    title: document.getElementById('announcementTitle').value,
+                    message: document.getElementById('announcementMessage').value,
+                    priority: document.getElementById('announcementPriority').value
+                };
+
+                if (window.editingAnnouncementId) {
+                    // Update existing announcement
+                    await apiRequest(`/faculty/announcements/${window.editingAnnouncementId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(announcementData)
+                    });
+                    showAlert('Announcement updated successfully', 'success');
+                    window.editingAnnouncementId = null;
+                } else {
+                    // Create new announcement
+                    await apiRequest('/faculty/announcements', {
+                        method: 'POST',
+                        body: JSON.stringify(announcementData)
+                    });
+                    showAlert('Announcement posted successfully', 'success');
+                }
+                document.getElementById('announcementForm').reset();
+                await loadMyAnnouncements();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        async function loadMyAnnouncements() {
+            try {
+                const announcements = await apiRequest('/faculty/announcements').catch(() => []);
+                const myAnnouncements = announcements.filter(a => a.created_by_user_id == user.user_id);
+                const div = document.getElementById('myAnnouncements');
+                if (myAnnouncements.length > 0) {
+                    div.innerHTML = myAnnouncements.map(a => `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h4>${a.title || 'Announcement'}</h4>
+                                    <p>${a.message || a.content || ''}</p>
+                                    <small>${formatDate(a.created_at)} | Priority: ${a.priority || 'normal'}</small>
+                                </div>
+                                <div>
+                                    <button class="btn btn-secondary btn-sm" onclick="editAnnouncement(${a.announcement_id})">Edit</button>
+                                    <button class="btn btn-danger btn-sm" onclick="deleteAnnouncement(${a.announcement_id})">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No announcements posted</p>';
+                }
+            } catch (error) {
+                console.error('Error loading announcements:', error);
+            }
+        }
+
+        async function loadOtherAnnouncements() {
+            try {
+                const announcements = await apiRequest('/faculty/announcements').catch(() => []);
+                const otherAnnouncements = announcements.filter(a => a.created_by_user_id != user.user_id);
+                const div = document.getElementById('otherAnnouncements');
+                if (otherAnnouncements.length > 0) {
+                    // Store announcements globally for modal access
+                    window.otherAnnouncementsData = otherAnnouncements;
+                    div.innerHTML = otherAnnouncements.map((a, index) => `
+                        <div class="card" style="margin-bottom: 1rem; cursor: pointer;" onclick="showOtherAnnouncementModal(${index})">
+                            <h4>${a.title || 'Announcement'}</h4>
+                            <p>${(a.message || a.content || '').substring(0, 100)}${(a.message || a.content || '').length > 100 ? '...' : ''}</p>
+                            <small>${formatDate(a.created_at)} | Priority: ${a.priority || 'normal'}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No announcements from other departments</p>';
+                }
+            } catch (error) {
+                console.error('Error loading other announcements:', error);
+            }
+        }
+
+        function showOtherAnnouncementModal(index) {
+            if (!window.otherAnnouncementsData || !window.otherAnnouncementsData[index]) return;
+            const announcement = window.otherAnnouncementsData[index];
+            const content = `
+                <div style="line-height: 1.8;">
+                    <h3>${announcement.title || 'Announcement'}</h3>
+                    <p><strong>Priority:</strong> ${announcement.priority || 'Normal'}</p>
+                    <p><strong>Posted:</strong> ${formatDate(announcement.created_at)}</p>
+                    <hr>
+                    <div style="white-space: pre-wrap; margin-top: 1rem;">
+                        ${announcement.message || announcement.content || 'No content'}
+                    </div>
+                </div>
+            `;
+            document.getElementById('otherAnnouncementModalContent').innerHTML = content;
+            document.getElementById('otherAnnouncementModal').style.display = 'flex';
+        }
+
+        function closeOtherAnnouncementModal() {
+            document.getElementById('otherAnnouncementModal').style.display = 'none';
+        }
+
+        async function editAnnouncement(announcementId) {
+            try {
+                const announcements = await apiRequest('/faculty/announcements');
+                const announcement = announcements.find(a => a.announcement_id == announcementId);
+                if (announcement) {
+                    document.getElementById('announcementTitle').value = announcement.title;
+                    document.getElementById('announcementMessage').value = announcement.message || announcement.content || '';
+                    document.getElementById('announcementPriority').value = announcement.priority || 'normal';
+                    
+                    showSection('announcements');
+                    window.editingAnnouncementId = announcementId;
+                    showAlert('Announcement loaded for editing. Update and submit to save changes.', 'info');
+                }
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function deleteAnnouncement(announcementId) {
+            if (confirm('Are you sure you want to delete this announcement?')) {
+                try {
+                    await apiRequest(`/faculty/announcements/${announcementId}`, { method: 'DELETE' });
+                    showAlert('Announcement deleted', 'success');
+                    await loadMyAnnouncements();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Tutoring
+        async function loadCourses() {
+            try {
+                // Get faculty's assigned courses from teaching schedule
+                // Using the same courses as shown in teaching schedule
+                const facultyCourses = [
+                    { course_code: 'CS101', course_name: 'Introduction to Computer Science' },
+                    { course_code: 'CS201', course_name: 'Data Structures' }
+                ];
+                
+                const select = document.getElementById('courseCode');
+                select.innerHTML = '<option value="">Select Course</option>' +
+                    facultyCourses.map(c => `<option value="${c.course_code}" data-name="${c.course_name}">${c.course_code} - ${c.course_name}</option>`).join('');
+                
+            } catch (error) {
+                console.error('Error loading courses:', error);
+            }
+        }
+
+        async function loadRooms() {
+            try {
+                const resources = await apiRequest('/bookings/resources').catch(() => []);
+                // Filter to only show classrooms and labs (suitable for tutoring)
+                const rooms = resources.filter(r => 
+                    r.resource_type === 'study_room' || r.resource_type === 'lab'
+                );
+                const select = document.getElementById('tutoringRoom');
+                select.innerHTML = '<option value="">Select Room</option>' +
+                    rooms.map(r => `<option value="${r.name}">${r.name} - ${r.building}</option>`).join('');
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+            }
+        }
+
+        document.getElementById('tutoringForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const startDate = document.getElementById('tutoringStartDate').value;
+                const dayOfWeek = document.getElementById('tutoringDay').value;
+                const time = document.getElementById('tutoringTime').value;
+                const duration = parseFloat(document.getElementById('tutoringDuration').value);
+                
+                if (!startDate || !dayOfWeek || !time) {
+                    showAlert('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                // Calculate start and end time for the first session
+                const [hours, minutes] = time.split(':').map(Number);
+                const firstSessionDate = new Date(startDate);
+                const dayOfWeekIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(dayOfWeek);
+                const currentDay = firstSessionDate.getDay();
+                let daysToAdd = dayOfWeekIndex - currentDay;
+                if (daysToAdd < 0) daysToAdd += 7;
+                firstSessionDate.setDate(firstSessionDate.getDate() + daysToAdd);
+                firstSessionDate.setHours(hours, minutes, 0, 0);
+                
+                const endDate = new Date(firstSessionDate);
+                endDate.setHours(endDate.getHours() + duration);
+
+                // Get course name from selected option
+                const courseSelect = document.getElementById('courseCode');
+                const selectedOption = courseSelect.options[courseSelect.selectedIndex];
+                const courseName = selectedOption.getAttribute('data-name') || '';
+
+                await apiRequest('/tutoring', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        course_code: document.getElementById('courseCode').value,
+                        course_name: courseName,
+                        tutor: document.getElementById('tutorName').value,
+                        tutor_id: document.getElementById('tutorId').value,
+                        room: document.getElementById('tutoringRoom').value,
+                        start_date: startDate,
+                        day_of_week: dayOfWeek,
+                        time: time,
+                        duration: duration,
+                        start_time: firstSessionDate.toISOString(),
+                        end_time: endDate.toISOString(),
+                        capacity: parseInt(document.getElementById('tutoringCapacity').value),
+                        description: document.getElementById('tutoringDescription').value,
+                        recurring: true,
+                        frequency: 'weekly'
+                    })
+                });
+                showAlert('Tutoring session created successfully', 'success');
+                document.getElementById('tutoringForm').reset();
+                await loadMyTutoringSessions();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        async function loadMyTutoringSessions() {
+            try {
+                const sessions = await apiRequest('/tutoring').catch(() => []);
+                const mySessions = sessions.filter(s => (s.organizer_user_id == user.user_id || s.created_by_user_id == user.user_id));
+                const div = document.getElementById('myTutoringSessions');
+                if (mySessions.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Course Code</th>
+                                    <th>Course Name</th>
+                                    <th>Tutor</th>
+                                    <th>Room</th>
+                                    <th>Schedule</th>
+                                    <th>Time</th>
+                                    <th>Capacity</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${mySessions.map(s => {
+                                    let scheduleText = '';
+                                    if (s.recurring && s.day_of_week) {
+                                        scheduleText = `Every ${s.day_of_week}`;
+                                        if (s.start_date) {
+                                            scheduleText += ` (Starting ${formatDate(s.start_date)})`;
+                                        }
+                                    } else {
+                                        scheduleText = formatDate(s.start_time);
+                                    }
+                                    const timeText = s.time || (s.start_time ? formatTime(s.start_time) : 'N/A');
+                                    return `
+                                    <tr>
+                                        <td>${s.course_code || 'N/A'}</td>
+                                        <td>${s.course_name || 'N/A'}</td>
+                                        <td>${s.tutor || 'N/A'}</td>
+                                        <td>${s.room || 'TBA'}</td>
+                                        <td>${scheduleText}</td>
+                                        <td>${timeText}</td>
+                                        <td>${s.capacity}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="deleteTutoringSession(${s.session_id})">Delete</button>
+                                        </td>
+                                    </tr>
+                                `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No tutoring sessions created</p>';
+                }
+            } catch (error) {
+                console.error('Error loading tutoring sessions:', error);
+            }
+        }
+
+        async function deleteTutoringSession(sessionId) {
+            if (confirm('Are you sure you want to delete this tutoring session?')) {
+                try {
+                    await apiRequest(`/tutoring/sessions/${sessionId}`, { method: 'DELETE' });
+                    showAlert('Tutoring session deleted', 'success');
+                    await loadMyTutoringSessions();
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Issues
+        document.getElementById('issueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const formData = new FormData();
+                formData.append('category', document.getElementById('issueCategory').value);
+                formData.append('location', document.getElementById('issueLocation').value);
+                formData.append('description', document.getElementById('issueDescription').value);
+                formData.append('priority', document.getElementById('issuePriority').value);
+                
+                const fileInput = document.getElementById('issueFile');
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                }
+
+                await apiRequest('/issues', {
+                    method: 'POST',
+                    body: formData
+                });
+                showAlert('Issue reported successfully', 'success');
+                document.getElementById('issueForm').reset();
+                await loadMyIssues();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        async function loadMyIssues() {
+            try {
+                const issues = await apiRequest('/issues/my-issues').catch(() => []);
+                const div = document.getElementById('myIssues');
+                if (issues.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${issues.map(i => `
+                                    <tr>
+                                        <td>#${i.issue_id}</td>
+                                        <td>${i.category}</td>
+                                        <td>${i.location}</td>
+                                        <td>${i.priority}</td>
+                                        <td>${getStatusBadge(i.status, 'issue')}</td>
+                                        <td>${formatDate(i.created_at)}</td>
+                                        <td>
+                                            <button class="btn btn-info btn-sm" onclick="viewIssueDetails(${i.issue_id})">View Details</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No issues reported</p>';
+                }
+            } catch (error) {
+                console.error('Error loading issues:', error);
+            }
+        }
+
+        async function viewIssueDetails(issueId) {
+            try {
+                const issue = await apiRequest(`/issues/${issueId}`);
+                const details = `
+                    <strong>Issue #${issue.issue_id}</strong><br>
+                    <strong>Category:</strong> ${issue.category}<br>
+                    <strong>Location:</strong> ${issue.location}<br>
+                    <strong>Description:</strong> ${issue.description}<br>
+                    <strong>Priority:</strong> ${issue.priority}<br>
+                    <strong>Status:</strong> ${issue.status}<br>
+                    ${issue.file_url ? `<strong>Photo:</strong> <img src="${issue.file_url}" style="max-width: 300px; margin-top: 10px;"><br>` : ''}
+                    <strong>Created:</strong> ${formatDate(issue.created_at)}<br>
+                    ${issue.activities ? `<strong>Activity Log:</strong><br>${issue.activities.map(a => `- ${a.note} (${formatDate(a.time_of_activity)})`).join('<br>')}` : ''}
+                `;
+                alert(details);
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+
+        // Store faculty classes globally
+        window.facultyClasses = [];
+
+        // Classroom Change
+        async function loadClassroomChangeDropdowns() {
+            try {
+                // Load faculty's assigned classes from teaching schedule
+                // Using the same data structure as teaching schedule
+                window.facultyClasses = [
+                    { course_code: 'CS101', course_name: 'Introduction to Computer Science', room: 'Nicol 520', day: 'Monday, Wednesday', time: '10:00 AM - 11:30 AM' },
+                    { course_code: 'CS201', course_name: 'Data Structures', room: 'Nicol 420', day: 'Tuesday, Thursday', time: '2:00 PM - 3:30 PM' }
+                ];
+                
+                // Populate faculty class dropdown
+                const facultyClassSelect = document.getElementById('facultyClass');
+                facultyClassSelect.innerHTML = '<option value="">Select Your Class</option>' +
+                    window.facultyClasses.map((cls, index) => 
+                        `<option value="${index}" data-room="${cls.room}" data-course="${cls.course_code}">${cls.course_code} - ${cls.course_name} (${cls.room})</option>`
+                    ).join('');
+
+                // Load resources (classrooms, labs, sports halls) for new classroom selection
+                const resources = await apiRequest('/bookings/resources').catch(() => []);
+                
+                // Filter resources for faculty: only show classrooms, labs (including computer labs), and sports halls
+                // Exclude study rooms and library seats
+                const filteredResources = resources.filter(r => {
+                    const type = r.resource_type;
+                    const name = (r.name || '').toLowerCase();
+                    
+                    // Always include labs and sports halls
+                    if (type === 'lab' || type === 'sports_hall') {
+                        return true;
+                    }
+                    
+                    // For study_room type, only include if it's actually a classroom (not a study room)
+                    if (type === 'study_room') {
+                        // Include if name contains "classroom", "lecture hall", or "seminar room"
+                        // Exclude if name contains "study room" (actual study rooms)
+                        return (name.includes('classroom') || name.includes('lecture hall') || name.includes('seminar room')) 
+                               && !name.includes('study room');
+                    }
+                    
+                    return false;
+                });
+
+                // Populate new classroom dropdown
+                const newClassroomSelect = document.getElementById('newClassroom');
+                newClassroomSelect.innerHTML = '<option value="">Select New Classroom</option>' +
+                    filteredResources.map(r => `<option value="${r.name}">${r.name} - ${r.building}</option>`).join('');
+                
+            } catch (error) {
+                console.error('Error loading classroom change dropdowns:', error);
+                showAlert('Failed to load dropdown options', 'error');
+            }
+        }
+
+        function onFacultyClassSelected() {
+            const selectedIndex = document.getElementById('facultyClass').value;
+            if (selectedIndex === '' || !window.facultyClasses || !window.facultyClasses[selectedIndex]) {
+                document.getElementById('currentClassroom').value = '';
+                document.getElementById('changeCourseCode').value = '';
+                return;
+            }
+            
+            const selectedClass = window.facultyClasses[selectedIndex];
+            document.getElementById('currentClassroom').value = selectedClass.room;
+            document.getElementById('changeCourseCode').value = selectedClass.course_code;
+        }
+
+        document.getElementById('classroomChangeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const facultyClassIndex = document.getElementById('facultyClass').value;
+                if (!facultyClassIndex || facultyClassIndex === '') {
+                    showAlert('Please select your class first', 'error');
+                    return;
+                }
+                
+                await apiRequest('/faculty/classroom-change/request', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        current_classroom: document.getElementById('currentClassroom').value,
+                        new_classroom: document.getElementById('newClassroom').value,
+                        course_code: document.getElementById('changeCourseCode').value,
+                        reason: document.getElementById('changeReason').value,
+                        details: document.getElementById('changeDetails').value
+                    })
+                });
+                showAlert('Classroom change request submitted', 'success');
+                document.getElementById('classroomChangeForm').reset();
+                await loadClassroomChangeDropdowns(); // Repopulate dropdowns after reset
+                await loadMyClassroomChangeRequests();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        async function loadMyClassroomChangeRequests() {
+            try {
+                const requests = await apiRequest('/faculty/classroom-change/my-requests').catch(() => []);
+                const div = document.getElementById('myClassroomChangeRequests');
+                if (requests.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Current Classroom</th>
+                                    <th>New Classroom</th>
+                                    <th>Course Code</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${requests.map(r => `
+                                    <tr>
+                                        <td>${r.current_classroom || 'N/A'}</td>
+                                        <td>${r.new_classroom || 'N/A'}</td>
+                                        <td>${r.course_code || 'N/A'}</td>
+                                        <td>${r.reason || 'N/A'}</td>
+                                        <td>${getStatusBadge(r.status || 'pending')}</td>
+                                        <td>${formatDate(r.requested_at || r.created_at)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No classroom change requests</p>';
+                }
+            } catch (error) {
+                console.error('Error loading classroom change requests:', error);
+            }
+        }
+
+        // Modal functions
+        async function loadMyActiveBookings() {
+            try {
+                const bookings = await apiRequest('/bookings/my-bookings');
+                const div = document.getElementById('myBookingsList');
+                const activeBookings = bookings.filter(b => b.status === 'active');
+                
+                if (activeBookings.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Resource</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${activeBookings.map(b => `
+                                    <tr>
+                                        <td>${b.resource?.name || 'N/A'}</td>
+                                        <td>${formatDate(b.start_time)}</td>
+                                        <td>${formatDate(b.end_time)}</td>
+                                        <td>${getStatusBadge(b.status)}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.booking_id})">Cancel</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No active bookings</p>';
+                }
+            } catch (error) {
+                console.error('Error loading active bookings:', error);
+                document.getElementById('myBookingsList').innerHTML = '<p>Error loading bookings</p>';
+            }
+        }
+
+        function showMyBookings() {
+            loadMyActiveBookings();
+            document.getElementById('myBookingsModal').style.display = 'flex';
+        }
+
+        function closeMyBookingsModal() {
+            document.getElementById('myBookingsModal').style.display = 'none';
+        }
+
+        function showMyEvents() {
+            loadMyEvents().then(() => {
+                document.getElementById('myEventsListModal').innerHTML = document.getElementById('myEventsList').innerHTML;
+                document.getElementById('myEventsModal').style.display = 'flex';
+            });
+        }
+
+        function closeMyEventsModal() {
+            document.getElementById('myEventsModal').style.display = 'none';
+        }
+
+        async function showPendingIssues() {
+            try {
+                const issues = await apiRequest('/issues/my-issues').catch(() => []);
+                const pending = issues.filter(i => i.status === 'pending');
+                const div = document.getElementById('pendingIssuesList');
+                if (pending.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${pending.map(i => `
+                                    <tr>
+                                        <td>#${i.issue_id}</td>
+                                        <td>${i.category}</td>
+                                        <td>${i.location}</td>
+                                        <td>${i.priority}</td>
+                                        <td>${formatDate(i.created_at)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No pending issues</p>';
+                }
+                document.getElementById('pendingIssuesModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading pending issues', 'error');
+            }
+        }
+
+        function closePendingIssuesModal() {
+            document.getElementById('pendingIssuesModal').style.display = 'none';
+        }
+
+        async function showNotifications() {
+            try {
+                const notifications = await apiRequest('/notifications').catch(() => []);
+                const div = document.getElementById('notificationsList');
+                if (notifications.length > 0) {
+                    div.innerHTML = notifications.map(n => `
+                        <div class="card" style="margin-bottom: 1rem; ${n.read ? 'opacity: 0.7;' : ''}">
+                            <h4>${n.type || 'Notification'}</h4>
+                            <p>${n.message}</p>
+                            <small>${formatDate(n.created_at)}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No notifications</p>';
+                }
+                document.getElementById('notificationsModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading notifications', 'error');
+            }
+        }
+
+        function closeNotificationsModal() {
+            document.getElementById('notificationsModal').style.display = 'none';
+        }
+
+        // Announcement modal functions
+        function showAnnouncementModal(index) {
+            if (!window.recentAnnouncementsData || !window.recentAnnouncementsData[index]) return;
+            const announcement = window.recentAnnouncementsData[index];
+            document.getElementById('announcementModalTitle').textContent = announcement.title || 'Announcement';
+            document.getElementById('announcementModalContent').innerHTML = `<p style="white-space: pre-wrap; line-height: 1.6;">${announcement.message || announcement.content || 'No content available.'}</p>`;
+            document.getElementById('announcementModalDate').textContent = `Posted: ${formatDate(announcement.created_at)}`;
+            document.getElementById('announcementModal').style.display = 'flex';
+        }
+
+        function closeAnnouncementModal() {
+            document.getElementById('announcementModal').style.display = 'none';
+        }
+
+        // Quick action functions
+        function openBookingModal() {
+            // Scroll to booking form
+            showSection('bookings');
+            document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openEventModal() {
+            document.getElementById('eventForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openAnnouncementModal() {
+            document.getElementById('announcementForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openTutoringModal() {
+            document.getElementById('tutoringForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openIssueModal() {
+            document.getElementById('issueForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize
+        loadDashboard();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Smart Campus System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Smart Campus System</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('bookings')">Bookings</a></li>
+                <li><a href="#" onclick="showSection('issues')">Report Issue</a></li>
+                <li><a href="#" onclick="showSection('events')">Events</a></li>
+                <li><a href="#" onclick="showSection('transportation')">Transportation</a></li>
+                <li><a href="#" onclick="showSection('parking')">Parking</a></li>
+                <li><a href="#" onclick="showSection('housing')">Housing</a></li>
+                <li><a href="#" onclick="showSection('employment')">Employment</a></li>
+                <li><a href="#" onclick="showSection('tutoring')">Tutoring</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="dashboard-header">
+                <h1>Welcome, <span id="userName"></span>!</h1>
+                <h3 style="font-size: 1rem; color: var(--gray); margin-top: 0.5rem; font-weight: normal;">ID: <span id="userUniversityId">-</span></h3>
+            </div>
+            <div class="dashboard-stats">
+                <div class="stat-card" onclick="showActiveBookings()" style="cursor: pointer;">
+                    <div class="stat-value" id="activeBookings">0</div>
+                    <div class="stat-label">Active Bookings</div>
+                </div>
+                <div class="stat-card" onclick="showPendingIssues()" style="cursor: pointer;">
+                    <div class="stat-value" id="pendingIssues">0</div>
+                    <div class="stat-label">Pending Issues</div>
+                </div>
+                <div class="stat-card" onclick="showEventTickets()" style="cursor: pointer;">
+                    <div class="stat-value" id="eventTickets">0</div>
+                    <div class="stat-label">Event Tickets</div>
+                </div>
+                <div class="stat-card" onclick="showHousingStatus()" style="cursor: pointer;">
+                    <div class="stat-value" id="housingStatus">-</div>
+                    <div class="stat-label">Housing</div>
+                </div>
+                <div class="stat-card" onclick="showParkingStatus()" style="cursor: pointer;">
+                    <div class="stat-value" id="parkingStatus">0</div>
+                    <div class="stat-label">Parking</div>
+                </div>
+                <div class="stat-card" onclick="showEmploymentStatus()" style="cursor: pointer;">
+                    <div class="stat-value" id="employmentStatus">-</div>
+                    <div class="stat-label">Employment</div>
+                </div>
+                <div class="stat-card" onclick="showNotifications()" style="cursor: pointer;">
+                    <div class="stat-value" id="unreadNotifications">0</div>
+                    <div class="stat-label">Notifications</div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">Recent Announcements</div>
+                <div id="announcements"></div>
+            </div>
+        </section>
+
+        <!-- Bookings Section -->
+        <section id="bookings" class="section" style="display: none;">
+            <h2>Resource Booking</h2>
+            <div class="card">
+                <div class="card-header">Book a Resource</div>
+                <form id="bookingForm">
+                    <div class="form-group">
+                        <label class="form-label">Resource Type</label>
+                        <select id="resourceType" class="form-control">
+                            <option value="">All Types</option>
+                            <option value="study_room">Study Room</option>
+                            <option value="lab">Lab</option>
+                            <option value="sports_hall">Sports Hall</option>
+                            <option value="library_seat">Library Seat</option>
+                            <option value="computer">Computer</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="loadAvailableResources()">Search Resources</button>
+                </form>
+                <div id="availableResources" style="margin-top: 2rem;"></div>
+            </div>
+            <div class="card">
+                <div class="card-header">My Bookings</div>
+                <div id="myBookings"></div>
+            </div>
+        </section>
+
+        <!-- Active Bookings Modal -->
+        <div id="activeBookingsModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Active Bookings</h3>
+                    <span class="modal-close" onclick="closeActiveBookingsModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="activeBookingsList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeActiveBookingsModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Issues Modal -->
+        <div id="pendingIssuesModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Pending Issues</h3>
+                    <span class="modal-close" onclick="closePendingIssuesModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="pendingIssuesList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePendingIssuesModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Tickets Modal -->
+        <div id="eventTicketsModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>My Tickets</h3>
+                    <span class="modal-close" onclick="closeEventTicketsModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="eventTicketsList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEventTicketsModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Housing Status Modal -->
+        <div id="housingStatusModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>My Housing Reservation</h3>
+                    <span class="modal-close" onclick="closeHousingStatusModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="housingStatusList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeHousingStatusModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parking Status Modal -->
+        <div id="parkingStatusModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>My Parking Reservations</h3>
+                    <span class="modal-close" onclick="closeParkingStatusModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="parkingStatusList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeParkingStatusModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Employment Status Modal -->
+        <div id="employmentStatusModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>My Employment Status</h3>
+                    <span class="modal-close" onclick="closeEmploymentStatusModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="employmentStatusList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeEmploymentStatusModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcement Modal -->
+        <div id="announcementModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="announcementModalTitle">Announcement</h3>
+                    <span class="modal-close" onclick="closeAnnouncementModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="announcementModalContent"></div>
+                    <div style="margin-top: 1rem; color: var(--gray); font-size: 0.9rem;">
+                        <small id="announcementModalDate"></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeAnnouncementModal()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Modal -->
+        <div id="notificationsModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Notifications</h3>
+                    <span class="modal-close" onclick="closeNotificationsModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="notificationsList"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeNotificationsModal()">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="markAllNotificationsRead()">Mark All as Read</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Modal -->
+        <div id="bookingModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Book Resource</h3>
+                    <span class="modal-close" onclick="closeBookingModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="bookingModalForm">
+                        <input type="hidden" id="modalResourceId">
+                        <div class="form-group">
+                            <label class="form-label">Start Time</label>
+                            <input type="datetime-local" id="modalStartTime" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">End Time</label>
+                            <input type="datetime-local" id="modalEndTime" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Purpose</label>
+                            <input type="text" id="modalPurpose" class="form-control" placeholder="General use" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeBookingModal()">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="submitBookingModal()">Submit</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Issues Section -->
+        <section id="issues" class="section" style="display: none;">
+            <h2>Report an Issue</h2>
+            <div class="card">
+                <form id="issueForm">
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="issueCategory" class="form-control" required>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="IT">IT</option>
+                            <option value="environmental">Environmental</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="issueLocation" class="form-control" placeholder="Building, Room Number" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="issueDescription" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select id="issuePriority" class="form-control">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Attach Photo (Optional)</label>
+                        <input type="file" id="issueFile" class="form-control" accept="image/*">
+                        <small class="form-text text-muted">You can attach a photo to help describe the issue</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Issue</button>
+                </form>
+            </div>
+            <div class="card">
+                <div class="card-header">My Issues</div>
+                <div id="myIssues"></div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="events" class="section" style="display: none;">
+            <h2>Campus Events</h2>
+            <div id="eventsList"></div>
+            <div class="card">
+                <div class="card-header">My Event Tickets</div>
+                <div id="myTickets"></div>
+            </div>
+        </section>
+
+        <!-- Transportation Section -->
+        <section id="transportation" class="section" style="display: none;">
+            <h2>Transportation Services</h2>
+            <div id="transportationRoutes"></div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Transportation Tickets</div>
+                <div id="myTransportationTickets"></div>
+            </div>
+        </section>
+
+        <!-- Parking Section -->
+        <section id="parking" class="section" style="display: none;">
+            <h2>Parking Spaces</h2>
+            <div id="availableParkingSpaces"></div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Parking Reservations</div>
+                <div id="myParkingReservations"></div>
+            </div>
+        </section>
+
+        <!-- Housing Section -->
+        <section id="housing" class="section" style="display: none;">
+            <h2>Housing & Dorms</h2>
+            <div id="availableDorms"></div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Housing Reservation</div>
+                <div id="myHousingReservation"></div>
+            </div>
+        </section>
+
+        <!-- Employment Section -->
+        <section id="employment" class="section" style="display: none;">
+            <h2>Student Employment</h2>
+            <div id="employmentJobs"></div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">My Employment Status</div>
+                <div id="myEmploymentStatus"></div>
+            </div>
+        </section>
+
+        <!-- Tutoring Section -->
+        <section id="tutoring" class="section" style="display: none;">
+            <h2>Available Tutoring Sessions</h2>
+            <div class="card">
+                <div class="card-header">Tutoring Sessions</div>
+                <div id="tutoringSessions"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Chatbot -->
+    <div class="chatbot-container">
+        <button class="chatbot-button" onclick="toggleChatbot()">💬</button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-messages" id="chatbotMessages"></div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') sendChatbotMessage()">
+                <button class="btn btn-primary" onclick="sendChatbotMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        // Check authentication
+        checkAuth();
+        const user = getCurrentUser();
+        // Capitalize first name
+        // Capitalize first name and set ID
+        const firstName = (user.first_name || 'Student').charAt(0).toUpperCase() + (user.first_name || 'Student').slice(1).toLowerCase();
+        const userNameEl = document.getElementById('userName');
+        const userUniversityIdEl = document.getElementById('userUniversityId');
+        if (userNameEl) userNameEl.textContent = firstName;
+        if (userUniversityIdEl) userUniversityIdEl.textContent = user.university_id || '-';
+
+        // Show section
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionName).style.display = 'block';
+            
+            // Update active tab styling
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-links a[onclick*="'${sectionName}'"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            loadSectionData(sectionName);
+        }
+        
+        // Set dashboard as active on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const dashboardLink = document.querySelector(`.nav-links a[onclick*="'dashboard'"]`);
+            if (dashboardLink) {
+                dashboardLink.classList.add('active');
+            }
+        });
+
+        // Load section data
+        async function loadSectionData(section) {
+            if (section === 'dashboard') {
+                await loadDashboard();
+            } else if (section === 'bookings') {
+                await loadMyBookings();
+            } else if (section === 'issues') {
+                await loadMyIssues();
+            } else if (section === 'events') {
+                await loadEvents();
+                await loadMyTickets();
+            } else if (section === 'transportation') {
+                await loadTransportation();
+            } else if (section === 'parking') {
+                await loadParking();
+            } else if (section === 'housing') {
+                await loadDorms();
+            } else if (section === 'employment') {
+                await loadEmployment();
+            } else if (section === 'tutoring') {
+                await loadTutoring();
+            }
+        }
+
+        // Helper function to check if booking is currently active (time-based)
+        function isBookingCurrentlyActive(booking) {
+            if (booking.status !== 'active') return false;
+            const now = new Date();
+            const startTime = new Date(booking.start_time);
+            const endTime = new Date(booking.end_time);
+            return now >= startTime && now <= endTime;
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Fetch fresh data from server
+                const bookings = await apiRequest('/bookings/my-bookings');
+                const issues = await apiRequest('/issues/my-issues');
+                const tickets = await apiRequest('/events/my/tickets');
+                const transportReservations = await apiRequest('/transportation/my/reservations').catch(() => []);
+                
+                // Count all active bookings (status active, including future ones)
+                const activeBookingsCount = bookings.filter(b => {
+                    if (b.status !== 'active') return false;
+                    // Include all active bookings (past, current, and future)
+                    const now = new Date();
+                    const endTime = new Date(b.end_time);
+                    // Show if booking hasn't ended yet
+                    return now <= endTime;
+                }).length;
+                
+                // Count active transportation reservations (status reserved, not expired)
+                const activeTransportCount = transportReservations.filter(r => {
+                    if (r.status !== 'reserved') return false;
+                    // Check if reservation hasn't passed yet (date + time)
+                    const now = new Date();
+                    const reservationDate = new Date(r.date);
+                    const [hours, minutes] = (r.time || '00:00').split(':').map(Number);
+                    const reservationDateTime = new Date(reservationDate);
+                    reservationDateTime.setHours(hours, minutes, 0, 0);
+                    // Add 2 hours buffer (trip duration) - consider active if trip hasn't ended
+                    const tripEndTime = new Date(reservationDateTime.getTime() + 2 * 60 * 60 * 1000);
+                    return now <= tripEndTime;
+                }).length;
+                
+                document.getElementById('activeBookings').textContent = activeBookingsCount + activeTransportCount;
+                document.getElementById('pendingIssues').textContent = issues.filter(i => i.status === 'pending').length;
+                document.getElementById('eventTickets').textContent = tickets.filter(t => t.status === 'reserved').length;
+                
+                // Load housing status
+                try {
+                    const housingReservation = await apiRequest('/dorms/my-reservation');
+                    if (housingReservation) {
+                        document.getElementById('housingStatus').textContent = 'Reserved';
+                    } else {
+                        document.getElementById('housingStatus').textContent = 'Available';
+                    }
+                } catch (error) {
+                    document.getElementById('housingStatus').textContent = 'Available';
+                }
+                
+                // Load parking status
+                try {
+                    const parkingReservation = await apiRequest('/parking/my-reservation');
+                    if (parkingReservation) {
+                        document.getElementById('parkingStatus').textContent = 'Reserved';
+                    } else {
+                        document.getElementById('parkingStatus').textContent = 'Available';
+                    }
+                } catch (error) {
+                    document.getElementById('parkingStatus').textContent = 'Available';
+                }
+                
+                // Load employment status
+                try {
+                    const employmentApplications = await apiRequest('/employment/my-applications');
+                    const activeApplication = employmentApplications.find(app => 
+                        app.status === 'pending' || app.status === 'approved'
+                    );
+                    if (activeApplication) {
+                        document.getElementById('employmentStatus').textContent = activeApplication.status === 'approved' ? 'Employed' : 'Applied';
+                    } else {
+                        document.getElementById('employmentStatus').textContent = 'None';
+                    }
+                } catch (error) {
+                    document.getElementById('employmentStatus').textContent = 'None';
+                }
+
+                // Load notifications count
+                try {
+                    const notifications = await apiRequest('/notifications').catch(() => []);
+                    const unreadCount = notifications.filter(n => !n.read).length;
+                    document.getElementById('unreadNotifications').textContent = unreadCount;
+                } catch (error) {
+                    document.getElementById('unreadNotifications').textContent = '0';
+                }
+
+                // Load announcements
+                const announcements = await apiRequest('/faculty/announcements').catch(() => []);
+                const announcementsDiv = document.getElementById('announcements');
+                if (announcements.length > 0) {
+                    announcementsDiv.innerHTML = announcements.map((a, index) => `
+                        <div class="card" style="margin-bottom: 1rem; cursor: pointer;" onclick="showAnnouncementModal(${index})">
+                            <strong>${a.title || 'Announcement'}</strong>
+                            <p>${(a.message || a.content || '').substring(0, 100)}${(a.message || a.content || '').length > 100 ? '...' : ''}</p>
+                            <small>${formatDate(a.created_at)}</small>
+                        </div>
+                    `).join('');
+                    // Store announcements globally for modal access
+                    window.announcementsData = announcements;
+                } else {
+                    announcementsDiv.innerHTML = '<p>No announcements</p>';
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Booking functions
+        async function loadAvailableResources() {
+            const resourceType = document.getElementById('resourceType').value;
+            try {
+                const resources = await apiRequest(`/bookings/resources?resource_type=${resourceType}`);
+                const div = document.getElementById('availableResources');
+                div.innerHTML = resources.map(r => {
+                    const isUnavailable = r.status === 'under_maintenance' || r.status === 'closed';
+                    return `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <h3>${r.name}</h3>
+                            <p>Type: ${r.resource_type} | Building: ${r.building} | Capacity: ${r.capacity}</p>
+                            <p>Status: ${getStatusBadge(r.status)}</p>
+                            ${isUnavailable 
+                                ? '<button class="btn btn-secondary" disabled>Unavailable</button>' 
+                                : `<button class="btn btn-primary" onclick="bookResource(${r.resource_id})">Book This Resource</button>`
+                            }
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                showAlert('Error loading resources', 'error');
+            }
+        }
+
+        let currentBookingResourceId = null;
+
+        function bookResource(resourceId) {
+            currentBookingResourceId = resourceId;
+            document.getElementById('modalResourceId').value = resourceId;
+            document.getElementById('modalStartTime').value = '';
+            document.getElementById('modalEndTime').value = '';
+            document.getElementById('modalPurpose').value = '';
+            document.getElementById('bookingModal').style.display = 'flex';
+        }
+
+        function closeBookingModal() {
+            document.getElementById('bookingModal').style.display = 'none';
+            document.getElementById('bookingModalForm').reset();
+            currentBookingResourceId = null;
+            // Clear any validation errors
+            document.getElementById('modalStartTime').setCustomValidity('');
+            document.getElementById('modalEndTime').setCustomValidity('');
+            document.getElementById('modalPurpose').setCustomValidity('');
+        }
+
+        async function submitBookingModal() {
+            const form = document.getElementById('bookingModalForm');
+            
+            // Check HTML5 validation first
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const startTime = document.getElementById('modalStartTime').value.trim();
+            const endTime = document.getElementById('modalEndTime').value.trim();
+            const purpose = document.getElementById('modalPurpose').value.trim() || 'General use';
+            const resourceId = currentBookingResourceId;
+
+            // Additional validation
+            if (!startTime || !endTime) {
+                showAlert('Please fill in both start time and end time', 'error');
+                document.getElementById('modalStartTime').focus();
+                return;
+            }
+
+            const startDate = new Date(startTime);
+            const endDate = new Date(endTime);
+            const now = new Date();
+
+            if (startDate >= endDate) {
+                showAlert('End time must be after start time', 'error');
+                document.getElementById('modalEndTime').focus();
+                return;
+            }
+
+            if (startDate < now) {
+                showAlert('Start time cannot be in the past', 'error');
+                document.getElementById('modalStartTime').focus();
+                return;
+            }
+
+            try {
+                const response = await apiRequest('/bookings/request', {
+                    method: 'POST',
+                    body: { resource_id: resourceId, start_time: startTime, end_time: endTime, purpose }
+                });
+                showAlert('Booking confirmed successfully', 'success');
+                closeBookingModal();
+                // Refresh both bookings list and dashboard immediately
+                await loadMyBookings();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to submit booking request', 'error');
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = ['bookingModal', 'notificationsModal', 'announcementModal', 'activeBookingsModal', 'eventTicketsModal', 'housingStatusModal', 'employmentStatusModal', 'parkingStatusModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    if (modalId === 'bookingModal') closeBookingModal();
+                    else if (modalId === 'notificationsModal') closeNotificationsModal();
+                    else if (modalId === 'announcementModal') closeAnnouncementModal();
+                    else if (modalId === 'activeBookingsModal') closeActiveBookingsModal();
+                    else if (modalId === 'eventTicketsModal') closeEventTicketsModal();
+                    else if (modalId === 'housingStatusModal') closeHousingStatusModal();
+                    else if (modalId === 'employmentStatusModal') closeEmploymentStatusModal();
+                    else if (modalId === 'parkingStatusModal') closeParkingStatusModal();
+                }
+            });
+        }
+
+        async function loadMyBookings() {
+            try {
+                const bookings = await apiRequest('/bookings/my-bookings');
+                const div = document.getElementById('myBookings');
+                if (bookings.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Resource</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${bookings.map(b => `
+                                    <tr>
+                                        <td>${b.resource?.name || 'N/A'}</td>
+                                        <td>${formatDate(b.start_time)}</td>
+                                        <td>${formatDate(b.end_time)}</td>
+                                        <td>${getStatusBadge(b.status)}</td>
+                                        <td>
+                                            ${b.status === 'active' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.booking_id})">Cancel</button>` : ''}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No bookings found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+
+        async function cancelBooking(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                try {
+                    await apiRequest(`/bookings/cancel/${bookingId}`, { method: 'POST' });
+                    showAlert('Booking cancelled', 'success');
+                    loadMyBookings();
+                    loadDashboard(); // Refresh dashboard stats
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Issue functions
+        document.getElementById('issueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const formData = new FormData();
+                formData.append('category', document.getElementById('issueCategory').value);
+                formData.append('location', document.getElementById('issueLocation').value);
+                formData.append('description', document.getElementById('issueDescription').value);
+                formData.append('priority', document.getElementById('issuePriority').value);
+                
+                const fileInput = document.getElementById('issueFile');
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                }
+
+                await apiRequest('/issues', {
+                    method: 'POST',
+                    body: formData
+                });
+                showAlert('Issue reported successfully', 'success');
+                document.getElementById('issueForm').reset();
+                loadMyIssues();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        });
+
+        async function loadMyIssues() {
+            try {
+                const issues = await apiRequest('/issues/my-issues');
+                const div = document.getElementById('myIssues');
+                if (issues.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Photo</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${issues.map(i => `
+                                    <tr>
+                                        <td>#${i.issue_id}</td>
+                                        <td>${i.category}</td>
+                                        <td>${i.location}</td>
+                                        <td>${getStatusBadge(i.status, 'issue')}</td>
+                                        <td>${i.file_url ? `<img src="${i.file_url}" alt="Issue photo" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="window.open('${i.file_url}', '_blank')">` : '<span class="text-muted">No photo</span>'}</td>
+                                        <td>${formatDate(i.created_at)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No issues reported</p>';
+                }
+            } catch (error) {
+                console.error('Error loading issues:', error);
+            }
+        }
+
+        // Event functions
+        async function loadEvents() {
+            try {
+                const events = await apiRequest('/events');
+                const div = document.getElementById('eventsList');
+                div.innerHTML = events.map(e => {
+                    const organizerName = e.organizer_first_name && e.organizer_last_name 
+                        ? `${e.organizer_first_name} ${e.organizer_last_name}` 
+                        : 'Unknown Organizer';
+                    return `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <h3>${e.title}</h3>
+                        <p>${e.description || ''}</p>
+                        <p><strong>Organized by:</strong> ${organizerName}</p>
+                        <p>Date: ${formatDate(e.start_time)}</p>
+                        <p>Capacity: ${e.capacity}</p>
+                        <button class="btn btn-primary" onclick="reserveEventTicket(${e.event_id})">Reserve Ticket</button>
+                    </div>
+                `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading events:', error);
+            }
+        }
+
+        async function reserveEventTicket(eventId) {
+            try {
+                await apiRequest(`/events/${eventId}/reserve`, { method: 'POST' });
+                showAlert('Ticket reserved successfully', 'success');
+                loadMyTickets();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function loadMyTickets() {
+            try {
+                const tickets = await apiRequest('/events/my/tickets');
+                const div = document.getElementById('myTickets');
+                if (tickets.length > 0) {
+                    div.innerHTML = tickets.map(t => `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <h4>${t.event?.title || 'Event'}</h4>
+                            <p>Status: ${getStatusBadge(t.status)}</p>
+                            <p>Date: ${t.event ? formatDate(t.event.start_time) : 'N/A'}</p>
+                            <p>Reserved: ${formatDate(t.reserved_at)}</p>
+                            ${t.status === 'reserved' ? `<button class="btn btn-danger btn-sm" onclick="cancelTicketFromModal(${t.ticket_id})">Cancel</button>` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No event tickets</p>';
+                }
+            } catch (error) {
+                console.error('Error loading tickets:', error);
+            }
+        }
+
+        // Transportation functions
+        async function loadTransportation() {
+            try {
+                const routes = await apiRequest('/transportation/routes');
+                const div = document.getElementById('transportationRoutes');
+                div.innerHTML = routes.map(r => `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <h3>${r.route_name}</h3>
+                        <p>From: ${r.start_point} → To: ${r.end_point}</p>
+                        <p>Capacity: ${r.reserved_seats}/${r.capacity}</p>
+                        <button class="btn btn-primary" onclick="reserveTransportSeat(${r.route_id})">Reserve Seat</button>
+                    </div>
+                `).join('');
+                
+                // Load user's transportation reservations
+                await loadMyTransportationTickets();
+            } catch (error) {
+                console.error('Error loading transportation:', error);
+            }
+        }
+
+        async function loadMyTransportationTickets() {
+            try {
+                const transportReservations = await apiRequest('/transportation/my/reservations').catch(() => []);
+                const div = document.getElementById('myTransportationTickets');
+                
+                if (transportReservations.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Route</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Reserved</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${transportReservations.map(r => `
+                                    <tr>
+                                        <td>${r.route?.route_name || 'N/A'}</td>
+                                        <td>${r.date || 'N/A'}</td>
+                                        <td>${r.time || 'N/A'}</td>
+                                        <td>${getStatusBadge(r.status)}</td>
+                                        <td>${formatDate(r.reserved_at)}</td>
+                                        <td>
+                                            ${r.status === 'reserved' ? `<button class="btn btn-danger btn-sm" onclick="cancelTransportReservation(${r.reservation_id})">Cancel</button>` : ''}
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No transportation reservations</p>';
+                }
+            } catch (error) {
+                console.error('Error loading transportation tickets:', error);
+            }
+        }
+
+        async function cancelTransportReservation(reservationId) {
+            if (confirm('Are you sure you want to cancel this transportation reservation?')) {
+                try {
+                    await apiRequest(`/transportation/reservations/${reservationId}`, { method: 'DELETE' });
+                    showAlert('Reservation cancelled', 'success');
+                    loadMyTransportationTickets();
+                    loadDashboard(); // Refresh dashboard to update active bookings count
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function reserveTransportSeat(routeId) {
+            const date = prompt('Enter date (YYYY-MM-DD):');
+            if (date === null) return; // User clicked cancel
+            
+            const time = prompt('Enter time (HH:mm):');
+            if (time === null) return; // User clicked cancel
+            
+            // Validation
+            if (!date.trim() || !time.trim()) {
+                showAlert('Please fill in both date and time', 'error');
+                return;
+            }
+
+            // Validate date format
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(date.trim())) {
+                showAlert('Invalid date format. Please use YYYY-MM-DD', 'error');
+                return;
+            }
+
+            // Validate time format
+            const timeRegex = /^\d{2}:\d{2}$/;
+            if (!timeRegex.test(time.trim())) {
+                showAlert('Invalid time format. Please use HH:mm', 'error');
+                return;
+            }
+
+            try {
+                await apiRequest('/transportation/reserve', {
+                    method: 'POST',
+                    body: JSON.stringify({ routeId, date: date.trim(), time: time.trim() })
+                });
+                showAlert('Seat reserved', 'success');
+                await loadTransportation(); // This will also load My Transportation Tickets
+                loadDashboard(); // Refresh dashboard to update active bookings count
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        // Parking functions
+        async function loadParking() {
+            try {
+                const spaces = await apiRequest('/parking/available');
+                const div = document.getElementById('availableParkingSpaces');
+                div.innerHTML = spaces.map(s => `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <h3>${s.lot_name} - ${s.spot_number}</h3>
+                        <p>Type: ${s.type.charAt(0).toUpperCase() + s.type.slice(1)}</p>
+                        <p><strong>Price: $${s.price_per_semester || 'N/A'} per semester</strong></p>
+                        <p>Status: ${getStatusBadge(s.status)}</p>
+                        <button class="btn btn-primary" onclick="reserveParkingSpace(${s.parking_space_id})">Reserve Space</button>
+                    </div>
+                `).join('');
+                
+                // Load user's parking reservations
+                await loadMyParkingReservations();
+            } catch (error) {
+                console.error('Error loading parking:', error);
+            }
+        }
+
+        async function loadMyParkingReservations() {
+            try {
+                const reservation = await apiRequest('/parking/my-reservation');
+                const div = document.getElementById('myParkingReservations');
+                
+                if (reservation) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Lot Name</th>
+                                    <th>Spot Number</th>
+                                    <th>Semester</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${reservation.lot_name || 'N/A'}</td>
+                                    <td>${reservation.spot_number || 'N/A'}</td>
+                                    <td>${reservation.semester ? reservation.semester.charAt(0).toUpperCase() + reservation.semester.slice(1) : 'N/A'}</td>
+                                    <td>${reservation.start_date ? formatDate(reservation.start_date) : 'N/A'}</td>
+                                    <td>${reservation.end_date ? formatDate(reservation.end_date) : 'N/A'}</td>
+                                    <td>$${reservation.price_per_semester || 'N/A'}</td>
+                                    <td>${getStatusBadge(reservation.status)}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" onclick="cancelParkingReservation(${reservation.parking_space_id})">Cancel</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No parking reservation</p>';
+                }
+            } catch (error) {
+                console.error('Error loading parking reservation:', error);
+            }
+        }
+
+        async function reserveParkingSpace(spaceId) {
+            // Show semester selection instead of date inputs
+            const semester = prompt('Select semester:\n1. Fall (September - December)\n2. Spring (January - May)\n\nEnter "fall" or "spring":');
+            if (semester === null) return; // User clicked cancel
+            
+            const normalizedSemester = semester.trim().toLowerCase();
+            if (normalizedSemester !== 'fall' && normalizedSemester !== 'spring') {
+                showAlert('Invalid semester. Please enter "fall" or "spring"', 'error');
+                return;
+            }
+
+            try {
+                await apiRequest('/parking/reserve', {
+                    method: 'POST',
+                    body: JSON.stringify({ spaceId, semester: normalizedSemester })
+                });
+                showAlert('Parking space reserved', 'success');
+                await loadParking();
+                loadDashboard(); // Refresh dashboard
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function cancelParkingReservation(spaceId) {
+            if (confirm('Are you sure you want to cancel this parking reservation?')) {
+                try {
+                    await apiRequest(`/parking/cancel/${spaceId}`, { method: 'POST' });
+                    showAlert('Parking reservation cancelled', 'success');
+                    await loadParking();
+                    loadDashboard(); // Refresh dashboard
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function showParkingStatus() {
+            try {
+                const reservation = await apiRequest('/parking/my-reservation');
+                const listDiv = document.getElementById('parkingStatusList');
+                
+                if (reservation) {
+                    listDiv.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Lot Name</th>
+                                    <th>Spot Number</th>
+                                    <th>Semester</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${reservation.lot_name || 'N/A'}</td>
+                                    <td>${reservation.spot_number || 'N/A'}</td>
+                                    <td>${reservation.semester ? reservation.semester.charAt(0).toUpperCase() + reservation.semester.slice(1) : 'N/A'}</td>
+                                    <td>${reservation.start_date ? formatDate(reservation.start_date) : 'N/A'}</td>
+                                    <td>${reservation.end_date ? formatDate(reservation.end_date) : 'N/A'}</td>
+                                    <td>$${reservation.price_per_semester || 'N/A'}</td>
+                                    <td>${getStatusBadge(reservation.status)}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" onclick="cancelParkingReservationFromModal(${reservation.parking_space_id})">Cancel</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    listDiv.innerHTML = '<p>No parking reservation. You can reserve a parking space from the Parking section.</p>';
+                }
+                document.getElementById('parkingStatusModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading parking status', 'error');
+            }
+        }
+
+        function closeParkingStatusModal() {
+            document.getElementById('parkingStatusModal').style.display = 'none';
+        }
+
+        async function cancelParkingReservationFromModal(spaceId) {
+            if (confirm('Are you sure you want to cancel your parking reservation?')) {
+                try {
+                    await apiRequest(`/parking/cancel/${spaceId}`, { method: 'POST' });
+                    showAlert('Parking reservation cancelled', 'success');
+                    loadDashboard();
+                    
+                    // Refresh the parking status modal if it's open
+                    const parkingStatusModal = document.getElementById('parkingStatusModal');
+                    if (parkingStatusModal && parkingStatusModal.style.display === 'flex') {
+                        showParkingStatus();
+                    }
+                    
+                    // Refresh parking page if it's open
+                    const parkingSection = document.getElementById('parking');
+                    if (parkingSection && parkingSection.style.display !== 'none') {
+                        await loadParking();
+                    }
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Dorm functions
+        async function loadDorms() {
+            try {
+                const dorms = await apiRequest('/dorms/available');
+                const div = document.getElementById('availableDorms');
+                div.innerHTML = dorms.map(d => `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <h3>${d.building} - ${d.unit_number}</h3>
+                        <p>Capacity: ${d.capacity} | Gender: ${d.gender_policy}</p>
+                        <p><strong>Price: $${d.price_per_semester || 'N/A'} per semester</strong></p>
+                        <p>Status: ${getStatusBadge(d.status)}</p>
+                        <button class="btn btn-primary" onclick="bookDorm(${d.dorm_id})">Book Dorm</button>
+                    </div>
+                `).join('');
+                
+                // Load user's housing reservation
+                await loadMyHousingReservation();
+            } catch (error) {
+                console.error('Error loading dorms:', error);
+            }
+        }
+
+        async function loadMyHousingReservation() {
+            try {
+                const reservation = await apiRequest('/dorms/my-reservation');
+                const div = document.getElementById('myHousingReservation');
+                
+                if (reservation) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Building</th>
+                                    <th>Unit Number</th>
+                                    <th>Semester</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${reservation.building || 'N/A'}</td>
+                                    <td>${reservation.unit_number || 'N/A'}</td>
+                                    <td>${reservation.semester ? reservation.semester.charAt(0).toUpperCase() + reservation.semester.slice(1) : 'N/A'}</td>
+                                    <td>${reservation.start_date ? formatDate(reservation.start_date) : 'N/A'}</td>
+                                    <td>${reservation.end_date ? formatDate(reservation.end_date) : 'N/A'}</td>
+                                    <td>$${reservation.price_per_semester || 'N/A'}</td>
+                                    <td>${getStatusBadge(reservation.status)}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" onclick="cancelHousingReservation(${reservation.dorm_id})">Cancel</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No housing reservation</p>';
+                }
+            } catch (error) {
+                console.error('Error loading housing reservation:', error);
+            }
+        }
+
+        async function cancelHousingReservation(dormId) {
+            if (confirm('Are you sure you want to cancel your housing reservation?')) {
+                try {
+                    await apiRequest(`/dorms/cancel/${dormId}`, { method: 'POST' });
+                showAlert('Housing reservation cancelled', 'success');
+                await loadDorms();
+                loadDashboard(); // Refresh dashboard to update housing status
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function bookDorm(dormId) {
+            // Show semester selection instead of date inputs
+            const semester = prompt('Select semester:\n1. Fall (September - December)\n2. Spring (January - May)\n\nEnter "fall" or "spring":');
+            if (semester === null) return; // User clicked cancel
+            
+            const normalizedSemester = semester.trim().toLowerCase();
+            if (normalizedSemester !== 'fall' && normalizedSemester !== 'spring') {
+                showAlert('Invalid semester. Please enter "fall" or "spring"', 'error');
+                return;
+            }
+
+            try {
+                await apiRequest('/dorms/book', {
+                    method: 'POST',
+                    body: JSON.stringify({ dormId, semester: normalizedSemester })
+                });
+                showAlert('Dorm booked successfully', 'success');
+                await loadDorms();
+                loadDashboard(); // Refresh dashboard to update housing status
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        // Employment functions
+        async function loadEmployment() {
+            try {
+                const jobs = await apiRequest('/employment/jobs');
+                const div = document.getElementById('employmentJobs');
+                div.innerHTML = jobs.map(j => `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <h3>${j.job_title}</h3>
+                        <p>${j.description}</p>
+                        <p>Salary: $${j.salary}/hour | Hours: ${j.hours_per_week}/week</p>
+                        <button class="btn btn-primary" onclick="applyForJob(${j.job_id})">Apply</button>
+                    </div>
+                `).join('');
+                
+                // Load user's employment status
+                await loadMyEmploymentStatus();
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+            }
+        }
+
+        async function loadMyEmploymentStatus() {
+            try {
+                const applications = await apiRequest('/employment/my-applications');
+                const div = document.getElementById('myEmploymentStatus');
+                
+                if (applications.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Semester</th>
+                                    <th>Application Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${applications.map(app => `
+                                    <tr>
+                                        <td>${app.job?.job_title || 'N/A'}</td>
+                                        <td>${app.semester ? app.semester.charAt(0).toUpperCase() + app.semester.slice(1) : 'N/A'}</td>
+                                        <td>${formatDate(app.application_date)}</td>
+                                        <td>${getStatusBadge(app.status || 'pending')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No employment applications</p>';
+                }
+            } catch (error) {
+                console.error('Error loading employment status:', error);
+            }
+        }
+
+        // Tutoring
+        async function loadTutoring() {
+            try {
+                const sessions = await apiRequest('/tutoring').catch(() => []);
+                const div = document.getElementById('tutoringSessions');
+                
+                if (sessions.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Course Name</th>
+                                    <th>Day</th>
+                                    <th>Time</th>
+                                    <th>Place</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sessions.map(s => {
+                                    const day = s.day_of_week || (s.start_time ? new Date(s.start_time).toLocaleDateString('en-US', { weekday: 'long' }) : 'N/A');
+                                    const time = s.time || (s.start_time ? formatTime(s.start_time) : 'N/A');
+                                    const place = s.room || 'TBA';
+                                    const courseName = s.course_name || s.course_code || 'N/A';
+                                    
+                                    return `
+                                        <tr>
+                                            <td>${courseName}</td>
+                                            <td>${day}</td>
+                                            <td>${time}</td>
+                                            <td>${place}</td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No tutoring sessions available</p>';
+                }
+            } catch (error) {
+                console.error('Error loading tutoring sessions:', error);
+                document.getElementById('tutoringSessions').innerHTML = '<p>Error loading tutoring sessions</p>';
+            }
+        }
+
+        async function applyForJob(jobId) {
+            // Determine current semester
+            const now = new Date();
+            const month = now.getMonth() + 1; // 1-12
+            let currentSemester = 'fall';
+            if (month >= 2 && month <= 5) {
+                currentSemester = 'spring';
+            } else if (month >= 6 && month <= 8) {
+                currentSemester = 'summer';
+            }
+
+            try {
+                await apiRequest('/employment/apply', {
+                    method: 'POST',
+                    body: JSON.stringify({ jobId, semester: currentSemester })
+                });
+                showAlert('Application submitted', 'success');
+                await loadEmployment(); // Reload to show updated status
+                loadDashboard(); // Refresh dashboard to update employment status
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        // Chatbot
+        function toggleChatbot() {
+            document.getElementById('chatbotWindow').classList.toggle('active');
+        }
+
+        async function sendChatbotMessage() {
+            const input = document.getElementById('chatbotInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const messagesDiv = document.getElementById('chatbotMessages');
+            messagesDiv.innerHTML += `<div class="message user">${message}</div>`;
+            input.value = '';
+
+            try {
+                const response = await apiRequest('/chatbot/chat', {
+                    method: 'POST',
+                    body: JSON.stringify({ message })
+                });
+                messagesDiv.innerHTML += `<div class="message bot">${response.response}</div>`;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (error) {
+                messagesDiv.innerHTML += `<div class="message bot">Sorry, I couldn't process that request.</div>`;
+            }
+        }
+
+        // Helper function to check if transportation reservation is active
+        function isTransportReservationActive(reservation) {
+            if (!reservation || reservation.status !== 'reserved') return false;
+            const now = new Date();
+            const reservationDate = new Date(reservation.date);
+            const [hours, minutes] = (reservation.time || '00:00').split(':').map(Number);
+            const reservationDateTime = new Date(reservationDate);
+            reservationDateTime.setHours(hours, minutes, 0, 0);
+            // Add 2 hours buffer (trip duration) - consider active if trip hasn't ended
+            const tripEndTime = new Date(reservationDateTime.getTime() + 2 * 60 * 60 * 1000);
+            return now <= tripEndTime;
+        }
+
+        // Helper function to format transportation reservation datetime
+        function formatTransportDateTime(reservation) {
+            if (!reservation.date || !reservation.time) return 'N/A';
+            const date = new Date(reservation.date);
+            const [hours, minutes] = reservation.time.split(':').map(Number);
+            date.setHours(hours, minutes, 0, 0);
+            return formatDate(date.toISOString());
+        }
+
+        // Modal functions for dashboard stats
+        async function showActiveBookings() {
+            try {
+                // Fetch fresh data from server
+                const bookings = await apiRequest('/bookings/my-bookings');
+                const transportReservations = await apiRequest('/transportation/my/reservations').catch(() => []);
+                
+                // Filter for all active bookings (status active, including future ones)
+                const activeBookings = bookings.filter(b => {
+                    if (b.status !== 'active') return false;
+                    // Include all active bookings that haven't ended yet
+                    const now = new Date();
+                    const endTime = new Date(b.end_time);
+                    return now <= endTime;
+                });
+
+                // Filter for active transportation reservations
+                const activeTransport = transportReservations.filter(r => isTransportReservationActive(r));
+                
+                const listDiv = document.getElementById('activeBookingsList');
+                let html = '';
+                
+                // Display regular bookings
+                if (activeBookings.length > 0) {
+                    html += '<div style="margin-bottom: 2rem;"><h4>Resource Bookings</h4>';
+                    html += `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Resource</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${activeBookings.map(b => {
+                                    const now = new Date();
+                                    const startTime = new Date(b.start_time);
+                                    const endTime = new Date(b.end_time);
+                                    const isCurrentlyHappening = now >= startTime && now <= endTime;
+                                    const isUpcoming = now < startTime;
+                                    const statusBadge = isCurrentlyHappening ? '<span class="badge badge-success">Happening Now</span>' : 
+                                                       isUpcoming ? '<span class="badge badge-info">Upcoming</span>' : '';
+                                    return `
+                                    <tr>
+                                        <td>${b.resource?.name || 'N/A'}</td>
+                                        <td>${formatDate(b.start_time)}</td>
+                                        <td>${formatDate(b.end_time)}</td>
+                                        <td>${statusBadge}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="cancelBookingFromModal(${b.booking_id})">Cancel</button>
+                                        </td>
+                                    </tr>
+                                `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    html += '</div>';
+                }
+
+                // Display transportation reservations
+                if (activeTransport.length > 0) {
+                    html += '<div><h4>Transportation Reservations</h4>';
+                    html += `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Route</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${activeTransport.map(r => {
+                                    const now = new Date();
+                                    const reservationDate = new Date(r.date);
+                                    const [hours, minutes] = (r.time || '00:00').split(':').map(Number);
+                                    const reservationDateTime = new Date(reservationDate);
+                                    reservationDateTime.setHours(hours, minutes, 0, 0);
+                                    const isCurrentlyHappening = now >= reservationDateTime && now <= new Date(reservationDateTime.getTime() + 2 * 60 * 60 * 1000);
+                                    const isUpcoming = now < reservationDateTime;
+                                    const statusBadge = isCurrentlyHappening ? '<span class="badge badge-success">Happening Now</span>' : 
+                                                       isUpcoming ? '<span class="badge badge-info">Upcoming</span>' : '';
+                                    return `
+                                    <tr>
+                                        <td>${r.route?.route_name || 'N/A'}</td>
+                                        <td>${formatTransportDateTime(r)}</td>
+                                        <td>${statusBadge}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="cancelTransportReservationFromModal(${r.reservation_id})">Cancel</button>
+                                        </td>
+                                    </tr>
+                                `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    html += '</div>';
+                }
+
+                if (activeBookings.length === 0 && activeTransport.length === 0) {
+                    html = '<p>No active bookings</p>';
+                }
+                
+                listDiv.innerHTML = html;
+                document.getElementById('activeBookingsModal').style.display = 'flex';
+            } catch (error) {
+                console.error('Error loading active bookings:', error);
+                showAlert('Error loading active bookings', 'error');
+            }
+        }
+
+        function closeActiveBookingsModal() {
+            document.getElementById('activeBookingsModal').style.display = 'none';
+        }
+
+        async function showPendingIssues() {
+            try {
+                const issues = await apiRequest('/issues/my-issues');
+                const pendingIssues = issues.filter(i => i.status === 'pending');
+                
+                const listDiv = document.getElementById('pendingIssuesList');
+                if (pendingIssues.length > 0) {
+                    listDiv.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${pendingIssues.map(i => `
+                                    <tr>
+                                        <td>#${i.issue_id}</td>
+                                        <td>${i.category}</td>
+                                        <td>${i.location}</td>
+                                        <td>${(i.description || '').substring(0, 50)}${(i.description || '').length > 50 ? '...' : ''}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="cancelIssueFromModal(${i.issue_id})">Cancel</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    listDiv.innerHTML = '<p>No pending issues</p>';
+                }
+                document.getElementById('pendingIssuesModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading pending issues', 'error');
+            }
+        }
+
+        function closePendingIssuesModal() {
+            document.getElementById('pendingIssuesModal').style.display = 'none';
+        }
+
+        async function showEventTickets() {
+            try {
+                const tickets = await apiRequest('/events/my/tickets');
+                const activeTickets = tickets.filter(t => t.status === 'reserved');
+                
+                const listDiv = document.getElementById('eventTicketsList');
+                let html = '';
+                
+                if (activeTickets.length > 0) {
+                    html = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Date</th>
+                                    <th>Reserved</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${activeTickets.map(t => `
+                                    <tr>
+                                        <td>${t.event?.title || 'N/A'}</td>
+                                        <td>${t.event ? formatDate(t.event.start_time) : 'N/A'}</td>
+                                        <td>${formatDate(t.reserved_at)}</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="cancelTicketFromModal(${t.ticket_id})">Cancel</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    html = '<p>No event tickets</p>';
+                }
+                listDiv.innerHTML = html;
+                document.getElementById('eventTicketsModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading tickets', 'error');
+            }
+        }
+
+        function closeEventTicketsModal() {
+            document.getElementById('eventTicketsModal').style.display = 'none';
+        }
+
+        async function showHousingStatus() {
+            try {
+                const reservation = await apiRequest('/dorms/my-reservation');
+                const listDiv = document.getElementById('housingStatusList');
+                
+                if (reservation) {
+                    listDiv.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Building</th>
+                                    <th>Unit Number</th>
+                                    <th>Semester</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Price</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>${reservation.building || 'N/A'}</td>
+                                    <td>${reservation.unit_number || 'N/A'}</td>
+                                    <td>${reservation.semester ? reservation.semester.charAt(0).toUpperCase() + reservation.semester.slice(1) : 'N/A'}</td>
+                                    <td>${reservation.start_date ? formatDate(reservation.start_date) : 'N/A'}</td>
+                                    <td>${reservation.end_date ? formatDate(reservation.end_date) : 'N/A'}</td>
+                                    <td>$${reservation.price_per_semester || 'N/A'}</td>
+                                    <td>${getStatusBadge(reservation.status)}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" onclick="cancelHousingReservationFromModal(${reservation.dorm_id})">Cancel</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    listDiv.innerHTML = '<p>No housing reservation. You can book a dorm from the Housing section.</p>';
+                }
+                document.getElementById('housingStatusModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading housing status', 'error');
+            }
+        }
+
+        function closeHousingStatusModal() {
+            document.getElementById('housingStatusModal').style.display = 'none';
+        }
+
+        async function showEmploymentStatus() {
+            try {
+                const applications = await apiRequest('/employment/my-applications');
+                const listDiv = document.getElementById('employmentStatusList');
+                
+                if (applications.length > 0) {
+                    listDiv.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Semester</th>
+                                    <th>Application Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${applications.map(app => `
+                                    <tr>
+                                        <td>${app.job?.job_title || 'N/A'}</td>
+                                        <td>${app.semester ? app.semester.charAt(0).toUpperCase() + app.semester.slice(1) : 'N/A'}</td>
+                                        <td>${formatDate(app.application_date)}</td>
+                                        <td>${getStatusBadge(app.status || 'pending')}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    listDiv.innerHTML = '<p>No employment applications. You can apply for jobs from the Employment section.</p>';
+                }
+                document.getElementById('employmentStatusModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading employment status', 'error');
+            }
+        }
+
+        function closeEmploymentStatusModal() {
+            document.getElementById('employmentStatusModal').style.display = 'none';
+        }
+
+        async function cancelHousingReservationFromModal(dormId) {
+            if (confirm('Are you sure you want to cancel your housing reservation?')) {
+                try {
+                    await apiRequest(`/dorms/cancel/${dormId}`, { method: 'POST' });
+                    showAlert('Housing reservation cancelled', 'success');
+                    closeHousingStatusModal();
+                    loadDashboard(); // Refresh dashboard
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Cancel functions from modals
+        async function cancelBookingFromModal(bookingId) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                try {
+                    await apiRequest(`/bookings/cancel/${bookingId}`, { method: 'POST' });
+                    showAlert('Booking cancelled', 'success');
+                    closeActiveBookingsModal();
+                    loadDashboard();
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function cancelIssueFromModal(issueId) {
+            if (confirm('Are you sure you want to cancel this issue?')) {
+                try {
+                    await apiRequest(`/issues/${issueId}`, { method: 'DELETE' });
+                    showAlert('Issue cancelled', 'success');
+                    closePendingIssuesModal();
+                    loadDashboard();
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function cancelTicketFromModal(ticketId) {
+            if (confirm('Are you sure you want to cancel this ticket?')) {
+                try {
+                    await apiRequest(`/events/tickets/${ticketId}`, { method: 'DELETE' });
+                    showAlert('Ticket cancelled', 'success');
+                    closeEventTicketsModal();
+                    loadDashboard();
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        async function cancelTransportReservationFromModal(reservationId) {
+            if (confirm('Are you sure you want to cancel this transportation reservation?')) {
+                try {
+                    await apiRequest(`/transportation/reservations/${reservationId}`, { method: 'DELETE' });
+                    showAlert('Reservation cancelled', 'success');
+                    loadDashboard();
+                    
+                    // Refresh the active bookings modal if it's open
+                    const activeBookingsModal = document.getElementById('activeBookingsModal');
+                    if (activeBookingsModal && activeBookingsModal.style.display === 'flex') {
+                        showActiveBookings();
+                    }
+                    
+                    // Refresh transportation page if it's open
+                    const transportationSection = document.getElementById('transportation');
+                    if (transportationSection && transportationSection.style.display !== 'none') {
+                        await loadTransportation();
+                    }
+                } catch (error) {
+                    showAlert(error.message, 'error');
+                }
+            }
+        }
+
+        // Announcement modal functions
+        function showAnnouncementModal(index) {
+            if (!window.announcementsData || !window.announcementsData[index]) return;
+            const announcement = window.announcementsData[index];
+            document.getElementById('announcementModalTitle').textContent = announcement.title || 'Announcement';
+            document.getElementById('announcementModalContent').innerHTML = `<p style="white-space: pre-wrap; line-height: 1.6;">${announcement.message || announcement.content || 'No content available.'}</p>`;
+            document.getElementById('announcementModalDate').textContent = `Posted: ${formatDate(announcement.created_at)}`;
+            document.getElementById('announcementModal').style.display = 'flex';
+        }
+
+        function closeAnnouncementModal() {
+            document.getElementById('announcementModal').style.display = 'none';
+        }
+
+        // Notifications functions
+        async function showNotifications() {
+            try {
+                const notifications = await apiRequest('/notifications').catch(() => []);
+                const div = document.getElementById('notificationsList');
+                if (notifications.length > 0) {
+                    // Sort by date (most recent first)
+                    const sortedNotifications = notifications.sort((a, b) => {
+                        const dateA = new Date(a.sent_at || a.created_at || 0);
+                        const dateB = new Date(b.sent_at || b.created_at || 0);
+                        return dateB - dateA;
+                    });
+                    div.innerHTML = sortedNotifications.map(n => `
+                        <div class="card" style="margin-bottom: 1rem; ${n.read ? 'opacity: 0.7;' : 'border-left: 4px solid var(--primary);'}">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <h4 style="margin: 0 0 0.5rem 0; ${n.read ? '' : 'font-weight: bold;'}">${n.type ? n.type.charAt(0).toUpperCase() + n.type.slice(1).replace('_', ' ') : 'Notification'}</h4>
+                                    <p style="margin: 0; ${n.read ? '' : 'font-weight: 500;'}">${n.message}</p>
+                                    <small style="color: var(--gray);">${formatDate(n.sent_at || n.created_at)}</small>
+                                </div>
+                                ${!n.read ? `
+                                    <button class="btn btn-sm btn-secondary" onclick="markNotificationRead(${n.notification_id})" style="margin-left: 1rem;">Mark Read</button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No notifications</p>';
+                }
+                document.getElementById('notificationsModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Error loading notifications', 'error');
+            }
+        }
+
+        function closeNotificationsModal() {
+            document.getElementById('notificationsModal').style.display = 'none';
+        }
+
+        async function markNotificationRead(notificationId) {
+            try {
+                await apiRequest(`/notifications/${notificationId}/read`, { method: 'PUT' });
+                await showNotifications(); // Reload notifications
+                await loadDashboard(); // Update unread count
+            } catch (error) {
+                showAlert('Failed to mark notification as read', 'error');
+            }
+        }
+
+        async function markAllNotificationsRead() {
+            try {
+                await apiRequest('/notifications/read-all', { method: 'PUT' });
+                showAlert('All notifications marked as read', 'success');
+                await showNotifications(); // Reload notifications
+                await loadDashboard(); // Update unread count
+            } catch (error) {
+                showAlert('Failed to mark all notifications as read', 'error');
+            }
+        }
+
+        // Update window.onclick to handle all modals
+        const originalOnClick = window.onclick;
+        window.onclick = function(event) {
+            if (originalOnClick) originalOnClick(event);
+            const modals = ['activeBookingsModal', 'pendingIssuesModal', 'eventTicketsModal', 'parkingStatusModal', 'housingStatusModal', 'employmentStatusModal', 'bookingModal', 'announcementModal', 'notificationsModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    if (modalId === 'activeBookingsModal') closeActiveBookingsModal();
+                    else if (modalId === 'pendingIssuesModal') closePendingIssuesModal();
+                    else if (modalId === 'eventTicketsModal') closeEventTicketsModal();
+                    else if (modalId === 'parkingStatusModal') closeParkingStatusModal();
+                    else if (modalId === 'housingStatusModal') closeHousingStatusModal();
+                    else if (modalId === 'employmentStatusModal') closeEmploymentStatusModal();
+                    else if (modalId === 'bookingModal') closeBookingModal();
+                    else if (modalId === 'announcementModal') closeAnnouncementModal();
+                    else if (modalId === 'notificationsModal') closeNotificationsModal();
+                }
+            });
+        }
+
+        // Initialize
+        loadDashboard();
+    </script>
+</body>
+</html>
+

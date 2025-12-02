@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Smart Campus System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo-container">
+                <img src="/images/logo.png" alt="Smart Campus" class="logo-img">
+                <span class="logo-text">Smart Campus</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/login">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card" style="max-width: 600px;">
+            <h2>Create Your Account</h2>
+            <p class="subtitle">Join Smart Campus System today</p>
+            
+            <div id="alertContainer"></div>
+            
+            <form id="signupForm">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="firstName">First Name</label>
+                        <input 
+                            type="text" 
+                            id="firstName" 
+                            class="form-control" 
+                            placeholder="John"
+                            required
+                            autocomplete="given-name"
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="lastName">Last Name</label>
+                        <input 
+                            type="text" 
+                            id="lastName" 
+                            class="form-control" 
+                            placeholder="Doe"
+                            required
+                            autocomplete="family-name"
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="email">University Email</label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="form-control" 
+                        placeholder="student@lau.edu.lb"
+                        required
+                        autocomplete="email"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="universityId">University ID</label>
+                    <input 
+                        type="text" 
+                        id="universityId" 
+                        class="form-control" 
+                        placeholder="202300000"
+                        required
+                        pattern="[0-9]{9}"
+                        maxlength="9"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 9)"
+                    >
+                    <small style="color: var(--gray); font-size: 0.85rem;">Must be exactly 9 digits (e.g., 202300000)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        class="form-control" 
+                        placeholder="+961 3 123 456"
+                        required
+                        autocomplete="tel"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="role">Role</label>
+                    <select id="role" class="form-control" required onchange="handleRoleChange()">
+                        <option value="">Select your role</option>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="departmentGroup">
+                    <label class="form-label" for="department">Department/Faculty</label>
+                    <select id="department" class="form-control">
+                        <option value="">Select Department</option>
+                        <option value="1">Computer Science</option>
+                        <option value="2">Engineering</option>
+                        <option value="3">Business</option>
+                        <option value="4">Arts & Sciences</option>
+                        <option value="5">Medicine</option>
+                        <option value="6">Law</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" id="subroleGroup" style="display: none;">
+                    <label class="form-label" for="subrole">Sub-Role</label>
+                    <select id="subrole" class="form-control">
+                        <option value="">Select sub-role</option>
+                        <option value="it_support">IT Support</option>
+                        <option value="cleaning">Cleaning Staff</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="form-control" 
+                        placeholder="Create a strong password"
+                        required
+                        autocomplete="new-password"
+                        oninput="checkPasswordStrength(this.value)"
+                    >
+                    <div id="passwordRequirements" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--gray);">
+                        <div id="req-length" style="color: var(--gray);">✓ At least 8 characters</div>
+                        <div id="req-upper" style="color: var(--gray);">✓ One uppercase letter</div>
+                        <div id="req-number" style="color: var(--gray);">✓ One number</div>
+                        <div id="req-special" style="color: var(--gray);">✓ One special character</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="confirmPassword">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="confirmPassword" 
+                        class="form-control" 
+                        placeholder="Confirm your password"
+                        required
+                        autocomplete="new-password"
+                        oninput="checkPasswordMatch()"
+                    >
+                    <div id="passwordMatch" style="margin-top: 0.5rem; font-size: 0.85rem;"></div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="signupBtn">
+                    <span id="signupBtnText">Create Account</span>
+                    <span id="signupBtnSpinner" class="spinner hidden" style="width: 20px; height: 20px; margin: 0;"></span>
+                </button>
+            </form>
+            
+            <div class="auth-links">
+                <p>
+                    <a href="/login">Already have an account? Sign in</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        // Check if already logged in
+        if (isAuthenticated()) {
+            const user = getCurrentUser();
+            redirectToDashboard(user.role);
+        }
+
+        const signupForm = document.getElementById('signupForm');
+        const signupBtn = document.getElementById('signupBtn');
+        const signupBtnText = document.getElementById('signupBtnText');
+        const signupBtnSpinner = document.getElementById('signupBtnSpinner');
+        const alertContainer = document.getElementById('alertContainer');
+
+        function setLoading(loading) {
+            signupBtn.disabled = loading;
+            if (loading) {
+                signupBtnText.textContent = 'Creating Account...';
+                signupBtnSpinner.classList.remove('hidden');
+            } else {
+                signupBtnText.textContent = 'Create Account';
+                signupBtnSpinner.classList.add('hidden');
+            }
+        }
+
+        function showAlert(message, type = 'info') {
+            alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+
+        function checkPasswordStrength(password) {
+            const requirements = {
+                length: password.length >= 8,
+                upper: /[A-Z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[!@#$%^&*]/.test(password)
+            };
+
+            document.getElementById('req-length').style.color = requirements.length ? 'var(--secondary)' : 'var(--gray)';
+            document.getElementById('req-upper').style.color = requirements.upper ? 'var(--secondary)' : 'var(--gray)';
+            document.getElementById('req-number').style.color = requirements.number ? 'var(--secondary)' : 'var(--gray)';
+            document.getElementById('req-special').style.color = requirements.special ? 'var(--secondary)' : 'var(--gray)';
+        }
+
+        function checkPasswordMatch() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const matchDiv = document.getElementById('passwordMatch');
+            
+            if (confirmPassword.length === 0) {
+                matchDiv.textContent = '';
+                return;
+            }
+            
+            if (password === confirmPassword) {
+                matchDiv.textContent = '✓ Passwords match';
+                matchDiv.style.color = 'var(--secondary)';
+            } else {
+                matchDiv.textContent = '✗ Passwords do not match';
+                matchDiv.style.color = 'var(--danger)';
+            }
+        }
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const role = document.getElementById('role').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validation
+            if (!firstName || !lastName || !email || !phone || !role || !password) {
+                showAlert('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (!validateEmail(email)) {
+                showAlert('Please enter a valid email address', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Passwords do not match', 'error');
+                return;
+            }
+
+            if (!validatePassword(password)) {
+                showAlert('Password does not meet requirements. Please check the requirements below.', 'error');
+                return;
+            }
+
+            const universityId = document.getElementById('universityId')?.value.trim();
+            // Validate University ID format: exactly 9 digits
+            if (universityId && (!/^\d{9}$/.test(universityId))) {
+                showAlert('University ID must be exactly 9 digits (e.g., 202300000)', 'error');
+                return;
+            }
+
+            setLoading(true);
+            const departmentId = document.getElementById('department')?.value;
+            const subrole = document.getElementById('subrole')?.value || null;
+
+            const userData = {
+                first_name: firstName,
+                last_name: lastName,
+                email: email,
+                phone_number: phone,
+                role: role,
+                password: password,
+                university_id: universityId || null,
+                department_id: departmentId || null,
+                subrole: subrole
+            };
+
+            try {
+                const data = await signup(userData);
+                // Check if user was created but is pending approval
+                if (data.message && data.message.includes('pending approval')) {
+                    showAlert(data.message, 'info');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 3000);
+                } else if (data.token) {
+                    // User was approved immediately (shouldn't happen with new system, but handle it)
+                    showAlert('Account created successfully! Redirecting...', 'success');
+                    setTimeout(() => {
+                        redirectToDashboard(data.user.role);
+                    }, 1500);
+                } else {
+                    // Pending approval
+                    showAlert('Account created successfully! Your account is pending approval from an administrator. You will be redirected to login.', 'info');
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 3000);
+                }
+            } catch (error) {
+                showAlert(error.message || 'Failed to create account. Please try again.', 'error');
+                setLoading(false);
+            }
+        });
+
+        function handleRoleChange() {
+            const role = document.getElementById('role').value;
+            const subroleGroup = document.getElementById('subroleGroup');
+            const subroleSelect = document.getElementById('subrole');
+            const departmentGroup = document.getElementById('departmentGroup');
+            const departmentSelect = document.getElementById('department');
+            
+            // Show/hide subrole for maintenance
+            if (role === 'maintenance') {
+                subroleGroup.style.display = 'block';
+                subroleSelect.required = true;
+            } else {
+                subroleGroup.style.display = 'none';
+                subroleSelect.required = false;
+                subroleSelect.value = '';
+            }
+            
+            // Show/hide and require department based on role
+            if (role === 'student' || role === 'faculty') {
+                departmentGroup.style.display = 'block';
+                departmentSelect.required = true;
+            } else {
+                // Maintenance and admin don't need departments
+                departmentGroup.style.display = 'none';
+                departmentSelect.required = false;
+                departmentSelect.value = '';
+            }
+        }
+
+        // Auto-focus first name field
+        document.getElementById('firstName').focus();
+    </script>
+</body>
+</html>

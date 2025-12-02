@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Dashboard - Smart Campus System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Smart Campus System</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                <li id="issuesNav" style="display: none;"><a href="#" onclick="showSection('issues')">Issues</a></li>
+                <li id="tasksNav" style="display: none;"><a href="#" onclick="showSection('tasks')">Tasks</a></li>
+                <li id="facilitiesNav" style="display: none;"><a href="#" onclick="showSection('facilities')">Facility Status</a></li>
+                <li id="reportIssueNav" style="display: none;"><a href="#" onclick="showSection('report-issue')">Report Issue</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="dashboard-header">
+                <h1>Welcome, <span id="userName"></span>!</h1>
+                <h3 style="font-size: 1rem; color: var(--gray); margin-top: 0.5rem; font-weight: normal;">ID: <span id="userUniversityId">-</span></h3>
+                <p id="userSubrole" class="text-muted"></p>
+            </div>
+            <div class="dashboard-stats">
+                <div class="stat-card" onclick="showSection('issues'); filterIssues('pending')" style="cursor: pointer;">
+                    <div class="stat-value" id="pendingIssuesCount">0</div>
+                    <div class="stat-label">Pending Issues</div>
+                </div>
+                <div class="stat-card" onclick="showSection('issues'); filterIssues('in_progress')" style="cursor: pointer;">
+                    <div class="stat-value" id="inProgressIssuesCount">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card" onclick="showSection('issues'); filterIssues('resolved')" style="cursor: pointer;">
+                    <div class="stat-value" id="resolvedIssuesCount">0</div>
+                    <div class="stat-label">Resolved</div>
+                </div>
+                <div id="tasksStatCard" class="stat-card" onclick="showSection('tasks')" style="cursor: pointer; display: none;">
+                    <div class="stat-value" id="assignedTasksCount">0</div>
+                    <div class="stat-label">Assigned Tasks</div>
+                </div>
+                <div id="facilityAlertsCard" class="stat-card" onclick="showSection('facilities')" style="cursor: pointer;">
+                    <div class="stat-value" id="maintenanceFacilitiesCount">0</div>
+                    <div class="stat-label">Under Maintenance</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Quick Actions</div>
+                <div id="quickActions" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1rem;">
+                    <!-- Quick actions will be populated based on subrole -->
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Recent Activity</div>
+                <div id="recentActivity"></div>
+            </div>
+        </section>
+
+        <!-- Issues Section -->
+        <section id="issues" class="section" style="display: none;">
+            <h2>Issue Management</h2>
+            <div class="card">
+                <div class="card-header">Filter & Search</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select id="filterStatus" class="form-control" onchange="filterIssues()">
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="resolved">Resolved</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="filterCategory" class="form-control" onchange="filterIssues()">
+                            <option value="">All Categories</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="IT">IT</option>
+                            <option value="environmental">Environmental</option>
+                            <option value="equipment">Equipment</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select id="filterPriority" class="form-control" onchange="filterIssues()">
+                            <option value="">All Priorities</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="filterLocation" class="form-control" placeholder="Search location..." onkeyup="filterIssues()">
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Issues</div>
+            <div id="issuesList"></div>
+            </div>
+        </section>
+
+        <!-- Tasks Section (Cleaning Staff Only) -->
+        <section id="tasks" class="section" style="display: none;">
+            <h2>Cleaning Tasks</h2>
+            <div class="card">
+                <div class="card-header">My Cleaning Schedule</div>
+                <div id="cleaningTasksList"></div>
+            </div>
+        </section>
+
+        <!-- Facility Status Section -->
+        <section id="facilities" class="section" style="display: none;">
+            <h2>Facility Status Management</h2>
+            <div class="card">
+                <div class="card-header">All Facilities</div>
+            <div id="facilitiesList"></div>
+            </div>
+        </section>
+
+        <!-- Report Issue Section (for Cleaning Staff) -->
+        <section id="report-issue" class="section" style="display: none;">
+            <h2>Report Issue</h2>
+            <div class="card">
+                <div class="card-header">Report a New Issue</div>
+                <form id="issueReportForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="issueCategory" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="IT">IT</option>
+                            <option value="environmental">Environmental</option>
+                            <option value="equipment">Equipment</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" id="issueLocation" class="form-control" placeholder="e.g., Building, Room Number" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="issueDescription" class="form-control" rows="4" placeholder="Describe the issue in detail..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select id="issuePriority" class="form-control" required>
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Attach Photo (Optional)</label>
+                        <input type="file" id="issueFile" class="form-control" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Issue Report</button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Issue Detail Modal -->
+    <div id="issueDetailModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3>Issue Details</h3>
+                <span class="modal-close" onclick="closeIssueModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="issueDetailContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeIssueModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div id="taskDetailModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h3 id="taskModalTitle">Task Details</h3>
+                <span class="modal-close" onclick="closeTaskModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="taskModalContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeTaskModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        checkAuth();
+        const user = getCurrentUser();
+        // Capitalize first name
+        // Capitalize first name and set ID
+        const firstName = (user.first_name || 'Maintenance Staff').charAt(0).toUpperCase() + (user.first_name || 'Maintenance Staff').slice(1).toLowerCase();
+        const userNameEl = document.getElementById('userName');
+        const userUniversityIdEl = document.getElementById('userUniversityId');
+        if (userNameEl) userNameEl.textContent = firstName;
+        if (userUniversityIdEl) userUniversityIdEl.textContent = user.university_id || '-';
+        
+        // Set subrole display
+        const subrole = user.subrole || 'general';
+        const subroleNames = {
+            'it_support': 'IT Support',
+            'cleaning': 'Cleaning Staff'
+        };
+        document.getElementById('userSubrole').textContent = subroleNames[subrole] || 'Maintenance Staff';
+
+        // Show/hide features based on subrole
+        const quickActionsDiv = document.getElementById('quickActions');
+        if (subrole === 'it_support') {
+            // IT Support: Dashboard, Issues, Facility Status
+            document.getElementById('issuesNav').style.display = 'block';
+            document.getElementById('facilitiesNav').style.display = 'block';
+            document.getElementById('tasksNav').style.display = 'none';
+            document.getElementById('reportIssueNav').style.display = 'none';
+            document.getElementById('tasksStatCard').style.display = 'none';
+            document.getElementById('facilityAlertsCard').style.display = 'block';
+            quickActionsDiv.innerHTML = `
+                <button class="btn btn-primary" onclick="showSection('issues')">View All Issues</button>
+                <button class="btn btn-primary" onclick="showSection('facilities')">Manage Facilities</button>
+            `;
+        } else if (subrole === 'cleaning') {
+            // Cleaning Staff: Dashboard, Tasks, Report Issue
+            document.getElementById('tasksNav').style.display = 'block';
+            document.getElementById('reportIssueNav').style.display = 'block';
+            document.getElementById('issuesNav').style.display = 'none';
+            document.getElementById('facilitiesNav').style.display = 'none';
+            document.getElementById('tasksStatCard').style.display = 'block';
+            document.getElementById('facilityAlertsCard').style.display = 'none';
+            quickActionsDiv.innerHTML = `
+                <button class="btn btn-primary" onclick="showSection('tasks')">View Tasks</button>
+                <button class="btn btn-primary" onclick="showSection('report-issue')">Report Issue</button>
+            `;
+        }
+
+        // Show section
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.getElementById(sectionName).style.display = 'block';
+            
+            // Update active tab styling
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-links a[onclick*="'${sectionName}'"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            loadSectionData(sectionName);
+        }
+        
+        // Set dashboard as active on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const dashboardLink = document.querySelector(`.nav-links a[onclick*="'dashboard'"]`);
+            if (dashboardLink) {
+                dashboardLink.classList.add('active');
+            }
+        });
+
+        // Load section data
+        async function loadSectionData(section) {
+            if (section === 'dashboard') {
+                await loadDashboard();
+            } else if (section === 'issues') {
+                await loadIssues();
+            } else if (section === 'tasks') {
+                await loadCleaningTasks();
+            } else if (section === 'facilities') {
+                await loadFacilities();
+            } else if (section === 'report-issue') {
+                // Form is already loaded, no additional data needed
+            }
+        }
+
+        // Load dashboard
+        async function loadDashboard() {
+            try {
+                if (subrole === 'it_support') {
+                    // IT Support dashboard stats
+                    const issues = await apiRequest('/issues/all').catch(() => []);
+                    const resources = await apiRequest('/bookings/resources').catch(() => []);
+
+                    document.getElementById('pendingIssuesCount').textContent = issues.filter(i => i.status === 'pending').length;
+                    document.getElementById('inProgressIssuesCount').textContent = issues.filter(i => i.status === 'in_progress').length;
+                    document.getElementById('resolvedIssuesCount').textContent = issues.filter(i => i.status === 'resolved').length;
+                    document.getElementById('maintenanceFacilitiesCount').textContent = resources.filter(r => r.status === 'under_maintenance').length;
+
+                    // Load recent activity
+                    const recentIssues = issues.slice(0, 5).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    const activityDiv = document.getElementById('recentActivity');
+                    if (recentIssues.length > 0) {
+                        activityDiv.innerHTML = recentIssues.map((i, index) => `
+                            <div class="card" style="margin-bottom: 1rem; cursor: pointer;" onclick="showIssueModalFromActivity(${index})">
+                                <h4>Issue #${i.issue_id} - ${i.category}</h4>
+                                <p><strong>Location:</strong> ${i.location}</p>
+                                <p><strong>Status:</strong> ${getStatusBadge(i.status, 'issue')} | <strong>Priority:</strong> ${i.priority}</p>
+                                <small>${formatDate(i.created_at)}</small>
+                            </div>
+                        `).join('');
+                        // Store issues globally for modal access
+                        window.recentIssuesData = recentIssues;
+                    } else {
+                        activityDiv.innerHTML = '<p>No recent activity</p>';
+                    }
+                } else if (subrole === 'cleaning') {
+                    // Cleaning Staff dashboard stats
+                    const tasks = await apiRequest('/maintenance/cleaning-tasks').catch(() => []);
+                    document.getElementById('assignedTasksCount').textContent = tasks.filter(t => t.status !== 'completed').length;
+                    
+                    // Hide issue stats for cleaning staff
+                    document.getElementById('pendingIssuesCount').parentElement.style.display = 'none';
+                    document.getElementById('inProgressIssuesCount').parentElement.style.display = 'none';
+                    document.getElementById('resolvedIssuesCount').parentElement.style.display = 'none';
+
+                    // Load recent activity (tasks)
+                    const recentTasks = tasks.slice(0, 5).sort((a, b) => new Date(b.scheduled_for || b.created_at) - new Date(a.scheduled_for || a.created_at));
+                    const activityDiv = document.getElementById('recentActivity');
+                    if (recentTasks.length > 0) {
+                        activityDiv.innerHTML = recentTasks.map((t, index) => `
+                            <div class="card" style="margin-bottom: 1rem; cursor: pointer;" onclick="showTaskModal(${index})">
+                                <h4>${t.resource?.name || t.notes || 'Task #' + t.task_id}</h4>
+                                <p><strong>Scheduled:</strong> ${formatDate(t.scheduled_for || t.created_at)}</p>
+                                <p><strong>Status:</strong> ${getStatusBadge(t.status)}</p>
+                                ${t.notes ? `<p><strong>Notes:</strong> ${t.notes.substring(0, 100)}${t.notes.length > 100 ? '...' : ''}</p>` : ''}
+                            </div>
+                        `).join('');
+                        // Store tasks globally for modal access
+                        window.recentTasksData = recentTasks;
+                    } else {
+                        activityDiv.innerHTML = '<p>No recent tasks</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        // Load issues
+        let allIssues = [];
+        async function loadIssues() {
+            try {
+                allIssues = await apiRequest('/issues/all').catch(() => []);
+                filterIssues();
+            } catch (error) {
+                console.error('Error loading issues:', error);
+            }
+        }
+
+        function filterIssues(statusFilter = null) {
+            const status = statusFilter || document.getElementById('filterStatus')?.value || '';
+            const category = document.getElementById('filterCategory')?.value || '';
+            const priority = document.getElementById('filterPriority')?.value || '';
+            const location = document.getElementById('filterLocation')?.value?.toLowerCase() || '';
+
+            let filtered = allIssues;
+            if (status) filtered = filtered.filter(i => i.status === status);
+            if (category) filtered = filtered.filter(i => i.category === category);
+            if (priority) filtered = filtered.filter(i => i.priority === priority);
+            if (location) filtered = filtered.filter(i => i.location.toLowerCase().includes(location));
+
+                const div = document.getElementById('issuesList');
+            if (filtered.length > 0) {
+                div.innerHTML = filtered.map(i => `
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                        <h3>Issue #${i.issue_id} - ${i.category}</h3>
+                        <p><strong>Location:</strong> ${i.location}</p>
+                        <p><strong>Description:</strong> ${i.description}</p>
+                                <p><strong>Status:</strong> ${getStatusBadge(i.status, 'issue')} | <strong>Priority:</strong> ${i.priority}</p>
+                                <p><strong>Reported:</strong> ${formatDate(i.created_at)}</p>
+                                ${i.assigned_user_id ? `<p><strong>Assigned to:</strong> User #${i.assigned_user_id}</p>` : ''}
+                                ${i.file_url ? `<p><strong>Photo:</strong> <img src="${i.file_url}" style="max-width: 200px; cursor: pointer;" onclick="window.open('${i.file_url}', '_blank')"></p>` : ''}
+                            </div>
+                            <div style="margin-left: 1rem;">
+                        ${i.status === 'pending' ? `
+                                    <button class="btn btn-primary btn-sm" onclick="assignIssue(${i.issue_id})">Assign to Me</button>
+                                ` : i.assigned_user_id == user.user_id ? `
+                                    <button class="btn btn-info btn-sm" onclick="viewIssueDetails(${i.issue_id})">View Details</button>
+                                    ${i.status === 'in_progress' ? `
+                                        <button class="btn btn-success btn-sm" onclick="updateIssueStatus(${i.issue_id}, 'resolved')">Mark Resolved</button>
+                                    ` : i.status === 'resolved' ? `
+                                        <button class="btn btn-primary btn-sm" onclick="updateIssueStatus(${i.issue_id}, 'closed')">Close Issue</button>
+                                    ` : ''}
+                        ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                div.innerHTML = '<p>No issues found</p>';
+            }
+        }
+
+        async function assignIssue(issueId) {
+            try {
+                await apiRequest(`/maintenance/issues/${issueId}/assign`, { method: 'POST' });
+                showAlert('Issue assigned successfully', 'success');
+                await loadIssues();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function updateIssueStatus(issueId, status) {
+            try {
+                await apiRequest(`/issues/${issueId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status })
+                });
+                showAlert('Issue status updated', 'success');
+                await loadIssues();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function viewIssueDetails(issueId) {
+            try {
+                const issue = allIssues.find(i => i.issue_id == issueId);
+                if (!issue) {
+                    showAlert('Issue not found', 'error');
+                    return;
+                }
+
+                const activities = await apiRequest(`/issues/${issueId}/activities`).catch(() => []);
+                
+                const content = `
+                    <h3>Issue #${issue.issue_id}</h3>
+                    <p><strong>Category:</strong> ${issue.category}</p>
+                    <p><strong>Location:</strong> ${issue.location}</p>
+                    <p><strong>Description:</strong> ${issue.description}</p>
+                    <p><strong>Priority:</strong> ${issue.priority}</p>
+                    <p><strong>Status:</strong> ${getStatusBadge(issue.status, 'issue')}</p>
+                    <p><strong>Reported:</strong> ${formatDate(issue.created_at)}</p>
+                    ${issue.file_url ? `<p><strong>Photo:</strong><br><img src="${issue.file_url}" style="max-width: 100%; margin-top: 10px;"></p>` : ''}
+                    <hr>
+                    <h4>Activity Log</h4>
+                    ${activities.length > 0 ? activities.map(a => `
+                        <div style="margin-bottom: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 4px;">
+                            <p><strong>${a.action}</strong> - ${formatDate(a.time_of_activity)}</p>
+                            ${a.note ? `<p>${a.note}</p>` : ''}
+                        </div>
+                    `).join('') : '<p>No activity log</p>'}
+                    <hr>
+                    <h4>Add Note</h4>
+                    <form id="addNoteForm" onsubmit="addIssueNote(event, ${issueId})">
+                        <div class="form-group">
+                            <textarea id="issueNote" class="form-control" rows="3" placeholder="Add a note or update..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Note</button>
+                    </form>
+                `;
+                
+                document.getElementById('issueDetailContent').innerHTML = content;
+                document.getElementById('issueDetailModal').style.display = 'flex';
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        async function addIssueNote(event, issueId) {
+            event.preventDefault();
+            try {
+                const note = document.getElementById('issueNote').value;
+                await apiRequest(`/issues/${issueId}/activity`, {
+                    method: 'POST',
+                    body: JSON.stringify({ note, action: 'add_note' })
+                });
+                showAlert('Note added successfully', 'success');
+                document.getElementById('issueNote').value = '';
+                await viewIssueDetails(issueId);
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+        function closeIssueModal() {
+            document.getElementById('issueDetailModal').style.display = 'none';
+        }
+
+        // Task modal functions
+        function showTaskModal(index) {
+            if (!window.recentTasksData || !window.recentTasksData[index]) return;
+            const task = window.recentTasksData[index];
+            document.getElementById('taskModalTitle').textContent = `Task: ${task.resource?.name || 'Task #' + task.task_id}`;
+            const content = `
+                <div style="line-height: 1.8;">
+                    <p><strong>Resource:</strong> ${task.resource?.name || 'N/A'}</p>
+                    <p><strong>Scheduled For:</strong> ${formatDate(task.scheduled_for || task.created_at)}</p>
+                    <p><strong>Status:</strong> ${getStatusBadge(task.status)}</p>
+                    ${task.notes ? `<p><strong>Notes:</strong> <span style="white-space: pre-wrap;">${task.notes}</span></p>` : ''}
+                    ${task.completed_at ? `<p><strong>Completed At:</strong> ${formatDate(task.completed_at)}</p>` : ''}
+                </div>
+            `;
+            document.getElementById('taskModalContent').innerHTML = content;
+            document.getElementById('taskDetailModal').style.display = 'flex';
+        }
+
+        function closeTaskModal() {
+            document.getElementById('taskDetailModal').style.display = 'none';
+        }
+
+        // Show issue modal from recent activity
+        function showIssueModalFromActivity(index) {
+            if (!window.recentIssuesData || !window.recentIssuesData[index]) return;
+            const issue = window.recentIssuesData[index];
+            // Use existing showIssueModal function if it exists, or create content directly
+            const content = `
+                <div style="line-height: 1.8;">
+                    <p><strong>Issue ID:</strong> #${issue.issue_id}</p>
+                    <p><strong>Category:</strong> ${issue.category}</p>
+                    <p><strong>Location:</strong> ${issue.location || 'N/A'}</p>
+                    <p><strong>Status:</strong> ${getStatusBadge(issue.status, 'issue')}</p>
+                    <p><strong>Priority:</strong> ${issue.priority || 'Medium'}</p>
+                    <p><strong>Description:</strong> <span style="white-space: pre-wrap;">${issue.description || 'No description'}</span></p>
+                    <p><strong>Reported:</strong> ${formatDate(issue.created_at)}</p>
+                </div>
+            `;
+            document.getElementById('issueDetailContent').innerHTML = content;
+            document.getElementById('issueDetailModal').style.display = 'flex';
+        }
+
+        // Cleaning Tasks
+        async function loadCleaningTasks() {
+            try {
+                const tasks = await apiRequest('/maintenance/cleaning-tasks').catch(() => []);
+                const div = document.getElementById('cleaningTasksList');
+                if (tasks.length > 0) {
+                    div.innerHTML = tasks.map(t => {
+                        const checklistItems = t.checklist || [];
+                        const allChecked = checklistItems.length > 0 && checklistItems.every(item => item.completed);
+                        const hasUncheckedItems = checklistItems.length > 0 && checklistItems.some(item => !item.completed);
+                        // Show button if task is not completed OR if there are unchecked items
+                        const showMarkAllButton = t.status !== 'completed' || hasUncheckedItems;
+                        return `
+                            <div class="card" style="margin-bottom: 2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                    <div>
+                                        <h3>${t.resource?.name || t.resource_id || 'N/A'}</h3>
+                                        <p><strong>Scheduled For:</strong> ${formatDate(t.scheduled_for)}</p>
+                                        <p><strong>Status:</strong> ${getStatusBadge(t.status)}</p>
+                                        ${t.notes ? `<p><strong>Notes:</strong> ${t.notes}</p>` : ''}
+                                    </div>
+                                    <div>
+                                        ${showMarkAllButton ? `
+                                            <button class="btn btn-success" onclick="completeCleaningTask(${t.task_id})">Mark All Complete</button>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div style="border-top: 1px solid #ddd; padding-top: 1rem;">
+                                    <h4>Checklist:</h4>
+                                    ${checklistItems.length > 0 ? `
+                                        <div style="margin-top: 1rem;">
+                                            ${checklistItems.map((item, idx) => `
+                                                <div style="display: flex; align-items: center; padding: 0.5rem; margin-bottom: 0.5rem; background: ${item.completed ? '#e8f5e9' : '#fff'}; border: 1px solid #ddd; border-radius: 4px;">
+                                                    <input type="checkbox" 
+                                                           id="check-${t.task_id}-${idx}" 
+                                                           ${item.completed ? 'checked' : ''} 
+                                                           onchange="toggleChecklistItem(${t.task_id}, ${idx}, this.checked)"
+                                                           style="margin-right: 1rem; width: 20px; height: 20px; cursor: pointer;">
+                                                    <label for="check-${t.task_id}-${idx}" style="flex: 1; cursor: pointer; ${item.completed ? 'text-decoration: line-through; color: #666;' : ''}">
+                                                        ${item.task}
+                                                    </label>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    ` : `
+                                        <p style="color: #666; font-style: italic;">No checklist items. Task will be marked complete when you click "Mark All Complete".</p>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    div.innerHTML = '<p>No cleaning tasks assigned</p>';
+                }
+            } catch (error) {
+                console.error('Error loading cleaning tasks:', error);
+            }
+        }
+
+        async function toggleChecklistItem(taskId, itemIndex, completed) {
+            try {
+                await apiRequest(`/maintenance/cleaning-tasks/${taskId}/checklist`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ itemIndex, completed })
+                });
+                await loadCleaningTasks();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+                await loadCleaningTasks(); // Reload to revert checkbox
+            }
+        }
+
+        async function completeCleaningTask(taskId) {
+            try {
+                await apiRequest(`/maintenance/cleaning-tasks/${taskId}/complete`, { method: 'POST' });
+                showAlert('Task marked as complete', 'success');
+                await loadCleaningTasks();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+
+        // Facilities
+        async function loadFacilities() {
+            try {
+                const resources = await apiRequest('/bookings/resources').catch(() => []);
+                const div = document.getElementById('facilitiesList');
+                if (resources.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Facility Name</th>
+                                    <th>Building</th>
+                                    <th>Type</th>
+                                    <th>Current Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${resources.map(r => `
+                                    <tr>
+                                        <td>${r.name}</td>
+                                        <td>${r.building}</td>
+                                        <td>${r.resource_type}</td>
+                                        <td>${getStatusBadge(r.status)}</td>
+                                        <td>
+                                            <select id="status-${r.resource_id}" class="form-control" style="display: inline-block; width: auto;">
+                            <option value="active" ${r.status === 'active' ? 'selected' : ''}>Active</option>
+                            <option value="under_maintenance" ${r.status === 'under_maintenance' ? 'selected' : ''}>Under Maintenance</option>
+                            <option value="closed" ${r.status === 'closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                                            <button class="btn btn-primary btn-sm" onclick="updateFacilityStatus(${r.resource_id})">Update</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No facilities found</p>';
+                }
+            } catch (error) {
+                console.error('Error loading facilities:', error);
+            }
+        }
+
+        async function updateFacilityStatus(resourceId) {
+            const status = document.getElementById(`status-${resourceId}`).value;
+            try {
+                await apiRequest('/maintenance/facility-status', {
+                    method: 'PUT',
+                    body: JSON.stringify({ resourceId, status })
+                });
+                showAlert('Facility status updated', 'success');
+                await loadFacilities();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message, 'error');
+            }
+        }
+
+
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modals = ['issueDetailModal', 'taskDetailModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    if (modalId === 'issueDetailModal') closeIssueModal();
+                    else if (modalId === 'taskDetailModal') closeTaskModal();
+                }
+            });
+        }
+
+        // Issue Report Form (for Cleaning Staff)
+        document.getElementById('issueReportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const formData = new FormData();
+                formData.append('category', document.getElementById('issueCategory').value);
+                formData.append('location', document.getElementById('issueLocation').value);
+                formData.append('description', document.getElementById('issueDescription').value);
+                formData.append('priority', document.getElementById('issuePriority').value);
+                
+                const fileInput = document.getElementById('issueFile');
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                }
+
+                await apiRequest('/issues', {
+                    method: 'POST',
+                    body: formData
+                });
+                showAlert('Issue reported successfully', 'success');
+                document.getElementById('issueReportForm').reset();
+            } catch (error) {
+                showAlert(error.message || 'Failed to report issue', 'error');
+            }
+        });
+
+        // Initialize
+        loadDashboard();
+    </script>
+</body>
+</html>

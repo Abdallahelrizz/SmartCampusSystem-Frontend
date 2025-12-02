@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Smart Campus System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Smart Campus System</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+                <li><a href="#" onclick="showSection('users')">Users</a></li>
+                <li><a href="#" onclick="showSection('bookings')">Bookings</a></li>
+                <li><a href="#" onclick="showSection('employment')">Employment</a></li>
+                <li><a href="#" onclick="showSection('events')">Events</a></li>
+                <li><a href="#" onclick="showSection('classroom-change')">Classroom Change</a></li>
+                <li><a href="#" onclick="showSection('issues')">Issues</a></li>
+                <li><a href="#" onclick="showSection('resources')">Resources</a></li>
+                <li><a href="#" onclick="showSection('notifications')">Notifications</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section">
+            <div class="dashboard-header">
+                <h1>Welcome, <span id="userName"></span>!</h1>
+                <h3 style="font-size: 1rem; color: var(--gray); margin-top: 0.5rem; font-weight: normal;">ID: <span id="userUniversityId">-</span></h3>
+                <p class="text-muted" style="margin-top: 0.5rem;">System Overview</p>
+            </div>
+            
+            <div class="dashboard-stats">
+                <div class="stat-card" onclick="showSection('users')" style="cursor: pointer;">
+                    <div class="stat-value" id="totalUsers">0</div>
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-detail" id="userBreakdown"></div>
+                    <div class="stat-detail" style="color: var(--warning); margin-top: 0.5rem;">
+                        <small id="pendingUsersCount">0 pending approvals</small>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="showSection('bookings')" style="cursor: pointer;">
+                    <div class="stat-value" id="pendingBookings">0</div>
+                    <div class="stat-label">Pending Bookings</div>
+                </div>
+                <div class="stat-card" onclick="showSection('employment')" style="cursor: pointer;">
+                    <div class="stat-value" id="pendingEmployment">0</div>
+                    <div class="stat-label">Pending Employment</div>
+                </div>
+                <div class="stat-card" onclick="showSection('events')" style="cursor: pointer;">
+                    <div class="stat-value" id="pendingEvents">0</div>
+                    <div class="stat-label">Pending Events</div>
+                </div>
+                <div class="stat-card" onclick="showSection('classroom-change')" style="cursor: pointer;">
+                    <div class="stat-value" id="pendingClassroomChange">0</div>
+                    <div class="stat-label">Classroom Change</div>
+                </div>
+                <div class="stat-card" onclick="showSection('issues')" style="cursor: pointer;">
+                    <div class="stat-value" id="openIssues">0</div>
+                    <div class="stat-label">Open Issues</div>
+                </div>
+                <div class="stat-card" onclick="showSection('resources')" style="cursor: pointer;">
+                    <div class="stat-value" id="totalResources">0</div>
+                    <div class="stat-label">Total Resources</div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 2rem;">
+                <div class="card-header">Quick Actions</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; padding: 1rem;">
+                    <button class="btn btn-primary" onclick="showSection('users')">Manage Users</button>
+                    <button class="btn btn-primary" onclick="showSection('bookings')">Review Bookings</button>
+                    <button class="btn btn-primary" onclick="showSection('employment')">Review Employment</button>
+                    <button class="btn btn-primary" onclick="showSection('issues')">View Issues</button>
+                    <button class="btn btn-primary" onclick="showSection('resources')">Manage Resources</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- User Management Section -->
+        <section id="users" class="section" style="display: none;">
+            <h2>User Management</h2>
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">Pending User Approvals</div>
+                <div id="pendingUsersList"></div>
+            </div>
+            <div class="card">
+                <div class="card-header">All Users</div>
+                <div id="usersList"></div>
+            </div>
+        </section>
+
+        <!-- Booking Approvals Section -->
+        <section id="bookings" class="section" style="display: none;">
+            <h2>Booking Approvals</h2>
+            <div class="card">
+                <div class="card-header">Pending Booking Requests</div>
+                <div id="pendingBookingsList"></div>
+            </div>
+        </section>
+
+        <!-- Employment Approvals Section -->
+        <section id="employment" class="section" style="display: none;">
+            <h2>Employment Applications</h2>
+            <div class="card">
+                <div class="card-header">Pending Employment Applications</div>
+                <div id="pendingEmploymentList"></div>
+            </div>
+        </section>
+
+        <!-- Event Approvals Section -->
+        <section id="events" class="section" style="display: none;">
+            <h2>Event Approvals</h2>
+            <div class="card">
+                <div class="card-header">Pending Event Requests</div>
+                <div id="pendingEventsList"></div>
+            </div>
+        </section>
+
+        <!-- Classroom Change Approvals Section -->
+        <section id="classroom-change" class="section" style="display: none;">
+            <h2>Classroom Change Requests</h2>
+            <div class="card">
+                <div class="card-header">Pending Classroom Change Requests</div>
+                <div id="pendingClassroomChangeList"></div>
+            </div>
+        </section>
+
+        <!-- Issue Report Oversight Section -->
+        <section id="issues" class="section" style="display: none;">
+            <h2>Issue Report Oversight</h2>
+            <div class="card">
+                <div class="card-header">All Reported Issues</div>
+                <div id="issuesList"></div>
+            </div>
+        </section>
+
+        <!-- Resource Management Section -->
+        <section id="resources" class="section" style="display: none;">
+            <h2>Resource Management</h2>
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">Add New Resource</div>
+                <form id="addResourceForm" style="padding: 1rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Resource Name</label>
+                            <input type="text" id="resourceName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Type</label>
+                            <select id="resourceType" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="study_room">Study Room</option>
+                                <option value="lab">Lab</option>
+                                <option value="sports_hall">Sports Hall</option>
+                                <option value="library_seat">Library Seat</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Building</label>
+                            <input type="text" id="resourceBuilding" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Capacity</label>
+                            <input type="number" id="resourceCapacity" class="form-control" min="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 1rem;">Add Resource</button>
+                </form>
+            </div>
+            <div class="card">
+                <div class="card-header">All Resources</div>
+                <div id="resourcesList"></div>
+            </div>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="notifications" class="section" style="display: none;">
+            <h2>Notifications</h2>
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">Send Campus-Wide Message</div>
+                <form id="sendNotificationForm" style="padding: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea id="notificationMessage" class="form-control" rows="3" placeholder="Enter your message..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+            <div class="card">
+                <div class="card-header">Recent Notifications</div>
+                <div id="notificationsList"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- User Details Modal -->
+    <div id="userDetailsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h3>User Account Details</h3>
+                <span class="modal-close" onclick="closeUserDetailsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="userDetailsContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeUserDetailsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Approval Modal -->
+    <div id="approvalModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3>Review & Approve User</h3>
+                <span class="modal-close" onclick="closeApprovalModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1.5rem; color: var(--gray);">Review and edit user details before approval. All fields can be modified.</p>
+                <form id="approvalForm" onsubmit="event.preventDefault(); approveUser();">
+                    <div class="form-group">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" id="approveFirstName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name *</label>
+                        <input type="text" id="approveLastName" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email *</label>
+                        <input type="email" id="approveEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">University ID</label>
+                        <input type="text" id="approveUniversityId" class="form-control" pattern="[0-9]{9}" maxlength="9" placeholder="9 digits">
+                        <small style="color: var(--gray); font-size: 0.85rem;">Must be exactly 9 digits</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" id="approvePhone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role *</label>
+                        <select id="approveRole" class="form-control" required onchange="handleApprovalRoleChange()">
+                            <option value="student">Student</option>
+                            <option value="faculty">Faculty</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="approveSubroleGroup" style="display: none;">
+                        <label class="form-label" id="approveSubroleLabel" style="display: none;">Subrole *</label>
+                        <select id="approveSubrole" class="form-control">
+                            <option value="it_support">IT Support</option>
+                            <option value="cleaning">Cleaning Staff</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select id="approveDepartment" class="form-control">
+                            <option value="">Select Department</option>
+                            <option value="1">Computer Science</option>
+                            <option value="2">Engineering</option>
+                            <option value="3">Business</option>
+                            <option value="4">Arts & Sciences</option>
+                            <option value="5">Medicine</option>
+                            <option value="6">Law</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeApprovalModal()">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="approveUser()">Approve User</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script>
+        // Global functions that need to be accessible from HTML onclick handlers
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            const sectionEl = document.getElementById(sectionName);
+            if (sectionEl) {
+                sectionEl.style.display = 'block';
+            }
+            
+            // Update active tab styling
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-links a[onclick*="'${sectionName}'"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            loadSectionData(sectionName);
+        }
+
+        // Wait for DOM to be ready before initializing
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            const user = getCurrentUser();
+            if (!user || user.role !== 'admin') {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Capitalize first name and set ID
+            const firstName = (user.first_name || 'Admin').charAt(0).toUpperCase() + (user.first_name || 'Admin').slice(1).toLowerCase();
+            const userNameEl = document.getElementById('userName');
+            const userUniversityIdEl = document.getElementById('userUniversityId');
+            if (userNameEl) userNameEl.textContent = firstName;
+            if (userUniversityIdEl) userUniversityIdEl.textContent = user.university_id || '-';
+        
+            // Set dashboard as active on load
+            const dashboardLink = document.querySelector(`.nav-links a[onclick*="'dashboard'"]`);
+            if (dashboardLink) {
+                dashboardLink.classList.add('active');
+            }
+            
+            // Initialize dashboard
+            loadDashboard().catch(error => {
+                console.error('Error initializing dashboard:', error);
+                showAlert('Failed to load dashboard data', 'error');
+            });
+        });
+
+        async function loadSectionData(section) {
+            if (section === 'dashboard') {
+                await loadDashboard();
+            } else if (section === 'users') {
+                await loadPendingUsers();
+                await loadUsers();
+            } else if (section === 'bookings') {
+                await loadPendingBookings();
+            } else if (section === 'employment') {
+                await loadPendingEmployment();
+            } else if (section === 'events') {
+                await loadPendingEvents();
+            } else if (section === 'classroom-change') {
+                await loadPendingClassroomChange();
+            } else if (section === 'issues') {
+                await loadIssues();
+            } else if (section === 'resources') {
+                await loadResources();
+            } else if (section === 'notifications') {
+                await loadNotifications();
+            }
+        }
+
+        // Load Dashboard
+        async function loadDashboard() {
+            try {
+                console.log('Loading dashboard data...');
+                const users = await apiRequest('/admin/users').catch(error => {
+                    console.error('Error fetching users:', error);
+                    return [];
+                });
+                const bookings = await apiRequest('/admin/bookings/pending').catch(error => {
+                    console.error('Error fetching bookings:', error);
+                    return [];
+                });
+                const issues = await apiRequest('/issues/all').catch(error => {
+                    console.error('Error fetching issues:', error);
+                    return [];
+                });
+                const resources = await apiRequest('/bookings/resources').catch(error => {
+                    console.error('Error fetching resources:', error);
+                    return [];
+                });
+                
+                console.log('Dashboard data loaded:', { users: users.length, bookings: bookings.length, issues: issues.length, resources: resources.length });
+
+                // User stats
+                const totalUsersEl = document.getElementById('totalUsers');
+                if (totalUsersEl) {
+                    totalUsersEl.textContent = users.length;
+                    const students = users.filter(u => u.role === 'student').length;
+                    const faculty = users.filter(u => u.role === 'faculty').length;
+                    const maintenance = users.filter(u => u.role === 'maintenance').length;
+                    const admins = users.filter(u => u.role === 'admin').length;
+                    const userBreakdownEl = document.getElementById('userBreakdown');
+                    if (userBreakdownEl) {
+                        userBreakdownEl.innerHTML = `<small>Students: ${students} | Faculty: ${faculty} | Maintenance: ${maintenance} | Admin: ${admins}</small>`;
+                    }
+                }
+
+                // Pending users count
+                const pendingUsers = await apiRequest('/admin/users/pending').catch(() => []);
+                const pendingUsersCountEl = document.getElementById('pendingUsersCount');
+                if (pendingUsersCountEl) {
+                    pendingUsersCountEl.textContent = `${pendingUsers.length} pending approval${pendingUsers.length !== 1 ? 's' : ''}`;
+                }
+
+                // Booking stats
+                const pendingBookingsEl = document.getElementById('pendingBookings');
+                if (pendingBookingsEl) pendingBookingsEl.textContent = bookings.length;
+
+                // Employment stats
+                const employment = await apiRequest('/employment/pending').catch(() => []);
+                const pendingEmploymentEl = document.getElementById('pendingEmployment');
+                if (pendingEmploymentEl) pendingEmploymentEl.textContent = employment.length;
+
+                // Events stats
+                const events = await apiRequest('/events/pending').catch(() => []);
+                const pendingEventsEl = document.getElementById('pendingEvents');
+                if (pendingEventsEl) pendingEventsEl.textContent = events.length;
+
+                // Classroom Change stats
+                const classroomChange = await apiRequest('/faculty/classroom-change/pending').catch(() => []);
+                const pendingClassroomChangeEl = document.getElementById('pendingClassroomChange');
+                if (pendingClassroomChangeEl) pendingClassroomChangeEl.textContent = classroomChange.length;
+
+                // Issue stats
+                const openIssues = issues.filter(i => i.status !== 'closed' && i.status !== 'resolved').length;
+                const openIssuesEl = document.getElementById('openIssues');
+                if (openIssuesEl) openIssuesEl.textContent = openIssues;
+
+                // Resource stats
+                const totalResourcesEl = document.getElementById('totalResources');
+                if (totalResourcesEl) totalResourcesEl.textContent = resources.length;
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                showAlert('Failed to load dashboard data', 'error');
+            }
+        }
+
+        // Pending Users Management
+        async function loadPendingUsers() {
+            try {
+                const pendingUsers = await apiRequest('/admin/users/pending').catch(() => []);
+                const div = document.getElementById('pendingUsersList');
+                if (pendingUsers.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>University ID</th>
+                                    <th>Role</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${pendingUsers.map(u => `
+                                    <tr>
+                                        <td>${u.first_name} ${u.last_name}</td>
+                                        <td>${u.email}</td>
+                                        <td>${u.university_id || 'N/A'}</td>
+                                        <td>${u.role || 'student'}</td>
+                                        <td>${formatDate(u.created_at)}</td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm" onclick="showApprovalModal(${u.user_id})">Review & Approve</button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectUser(${u.user_id})" style="margin-left: 0.5rem;">Reject</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No pending user approvals</p>';
+                }
+            } catch (error) {
+                console.error('Error loading pending users:', error);
+                showAlert('Failed to load pending users', 'error');
+            }
+        }
+
+        async function showApprovalModal(userId) {
+            try {
+                const pendingUsers = await apiRequest('/admin/users/pending').catch(() => []);
+                const user = pendingUsers.find(u => u.user_id == userId);
+                if (!user) {
+                    showAlert('User not found', 'error');
+                    return;
+                }
+                
+                // Get departments for dropdown
+                const departments = [
+                    { id: 1, name: 'Computer Science' },
+                    { id: 2, name: 'Engineering' },
+                    { id: 3, name: 'Business' },
+                    { id: 4, name: 'Arts & Sciences' },
+                    { id: 5, name: 'Medicine' },
+                    { id: 6, name: 'Law' }
+                ];
+                
+                // Populate form with user data
+                document.getElementById('approveFirstName').value = user.first_name || '';
+                document.getElementById('approveLastName').value = user.last_name || '';
+                document.getElementById('approveEmail').value = user.email || '';
+                document.getElementById('approveUniversityId').value = user.university_id || '';
+                document.getElementById('approvePhone').value = user.phone_number || '';
+                document.getElementById('approveRole').value = user.role || 'student';
+                document.getElementById('approveDepartment').value = user.department_id || '';
+                
+                // Handle subrole based on role
+                const subroleSelect = document.getElementById('approveSubrole');
+                if (user.role === 'maintenance') {
+                    subroleSelect.style.display = 'block';
+                    document.getElementById('approveSubroleLabel').style.display = 'block';
+                    subroleSelect.value = user.subrole || 'it_support';
+                } else {
+                    subroleSelect.style.display = 'none';
+                    document.getElementById('approveSubroleLabel').style.display = 'none';
+                }
+                
+                // Store userId for approval
+                document.getElementById('approvalModal').setAttribute('data-user-id', userId);
+                
+                // Show modal
+                document.getElementById('approvalModal').style.display = 'flex';
+            } catch (error) {
+                showAlert('Failed to load user details', 'error');
+            }
+        }
+
+        function closeApprovalModal() {
+            document.getElementById('approvalModal').style.display = 'none';
+        }
+
+        async function approveUser() {
+            try {
+                const userId = document.getElementById('approvalModal').getAttribute('data-user-id');
+                if (!userId) {
+                    showAlert('User ID not found', 'error');
+                    return;
+                }
+                
+                const approvalData = {
+                    first_name: document.getElementById('approveFirstName').value.trim(),
+                    last_name: document.getElementById('approveLastName').value.trim(),
+                    email: document.getElementById('approveEmail').value.trim(),
+                    university_id: document.getElementById('approveUniversityId').value.trim(),
+                    phone_number: document.getElementById('approvePhone').value.trim(),
+                    role: document.getElementById('approveRole').value,
+                    department_id: document.getElementById('approveDepartment').value || null
+                };
+                
+                // Add subrole if role is maintenance
+                if (approvalData.role === 'maintenance') {
+                    approvalData.subrole = document.getElementById('approveSubrole').value;
+                }
+                
+                // Validation
+                if (!approvalData.first_name || !approvalData.last_name || !approvalData.email) {
+                    showAlert('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                if (!validateEmail(approvalData.email)) {
+                    showAlert('Please enter a valid email address', 'error');
+                    return;
+                }
+                
+                if (approvalData.university_id && !/^\d{9}$/.test(approvalData.university_id)) {
+                    showAlert('University ID must be exactly 9 digits', 'error');
+                    return;
+                }
+                
+                await apiRequest(`/admin/users/${userId}/approve`, {
+                    method: 'POST',
+                    body: JSON.stringify(approvalData)
+                });
+                
+                showAlert('User approved successfully', 'success');
+                closeApprovalModal();
+                await loadPendingUsers();
+                await loadUsers();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to approve user', 'error');
+            }
+        }
+
+        async function rejectUser(userId) {
+            if (!confirm('Are you sure you want to reject this user registration? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                await apiRequest(`/admin/users/${userId}/reject`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason: 'Rejected by administrator' })
+                });
+                showAlert('User registration rejected', 'success');
+                await loadPendingUsers();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to reject user', 'error');
+            }
+        }
+
+        function handleApprovalRoleChange() {
+            const role = document.getElementById('approveRole').value;
+            const subroleGroup = document.getElementById('approveSubroleGroup');
+            const subroleLabel = document.getElementById('approveSubroleLabel');
+            
+            if (role === 'maintenance') {
+                subroleGroup.style.display = 'block';
+                subroleLabel.style.display = 'block';
+                document.getElementById('approveSubrole').required = true;
+            } else {
+                subroleGroup.style.display = 'none';
+                subroleLabel.style.display = 'none';
+                document.getElementById('approveSubrole').required = false;
+            }
+        }
+
+        // User Management
+        async function loadUsers() {
+            try {
+                const users = await apiRequest('/admin/users').catch(error => {
+                    console.error('Error fetching users:', error);
+                    showAlert('Failed to load users: ' + (error.message || 'Unknown error'), 'error');
+                    return [];
+                });
+                
+                if (!Array.isArray(users)) {
+                    console.error('Users API returned non-array:', users);
+                    showAlert('Invalid data received from server', 'error');
+                    return;
+                }
+                
+                const div = document.getElementById('usersList');
+                if (!div) {
+                    console.error('usersList element not found');
+                    return;
+                }
+                
+                if (users.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Subrole</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${users.map(u => `
+                                    <tr>
+                                        <td>${u.first_name} ${u.last_name}</td>
+                                        <td>${u.email}</td>
+                                        <td>
+                                            <select id="role-${u.user_id}" class="form-control" onchange="updateUserRole(${u.user_id}, this.value)">
+                                                <option value="student" ${u.role === 'student' ? 'selected' : ''}>Student</option>
+                                                <option value="faculty" ${u.role === 'faculty' ? 'selected' : ''}>Faculty</option>
+                                                <option value="maintenance" ${u.role === 'maintenance' ? 'selected' : ''}>Maintenance</option>
+                                                <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            ${u.role === 'maintenance' ? `
+                                                <select id="subrole-${u.user_id}" class="form-control" onchange="updateUserSubrole(${u.user_id}, this.value)">
+                                                    <option value="it_support" ${(!u.subrole || u.subrole === '' || u.subrole === 'it_support') ? 'selected' : ''}>IT Support</option>
+                                                    <option value="cleaning" ${u.subrole === 'cleaning' ? 'selected' : ''}>Cleaning Staff</option>
+                                                </select>
+                                            ` : '<span>N/A</span>'}
+                                        </td>
+                                        <td>${getStatusBadge(u.status)}</td>
+                                        <td>
+                                            <button class="btn btn-info btn-sm" onclick="showUserDetails(${u.user_id})" style="margin-right: 0.5rem;">View Details</button>
+                                            <select id="status-${u.user_id}" class="form-control" onchange="updateUserStatus(${u.user_id}, this.value)" style="display: inline-block; width: auto;">
+                                                <option value="active" ${u.status === 'active' ? 'selected' : ''}>Active</option>
+                                                <option value="suspended" ${u.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                                                <option value="deactivated" ${u.status === 'deactivated' ? 'selected' : ''}>Deactivated</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No users found</p>';
+                }
+            } catch (error) {
+                showAlert(error.message || 'Failed to load users', 'error');
+            }
+        }
+
+        async function updateUserRole(userId, role) {
+            try {
+                const updateData = { role };
+                
+                // If changing to maintenance, always set a default subrole
+                if (role === 'maintenance') {
+                    // Get current user data
+                    try {
+                        const users = await apiRequest('/admin/users');
+                        const user = users.find(u => u.user_id == userId);
+                        // If user doesn't have a subrole or it's empty/null, set default to 'it_support'
+                        if (!user || !user.subrole || user.subrole.trim() === '') {
+                            updateData.subrole = 'it_support';
+                        } else {
+                            // Keep existing subrole if it's valid
+                            updateData.subrole = user.subrole;
+                        }
+                    } catch (err) {
+                        // If we can't get user data, just set default
+                        updateData.subrole = 'it_support';
+                    }
+                } else {
+                    // If changing from maintenance to another role, set subrole to null
+                    updateData.subrole = null;
+                }
+                
+                await apiRequest(`/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    body: JSON.stringify(updateData)
+                });
+                showAlert('User role updated', 'success');
+                await loadUsers();
+                await loadDashboard();
+            } catch (error) {
+                console.error('Error updating user role:', error);
+                showAlert(error.message || 'Failed to update user role', 'error');
+                await loadUsers(); // Reload to revert
+            }
+        }
+
+        async function updateUserSubrole(userId, subrole) {
+            try {
+                // Ensure subrole is null if empty/undefined, not undefined
+                const subroleValue = (subrole && subrole.trim() !== '') ? subrole.trim() : null;
+                await apiRequest(`/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ subrole: subroleValue })
+                });
+                showAlert('User subrole updated', 'success');
+                await loadUsers();
+            } catch (error) {
+                showAlert(error.message || 'Failed to update user subrole', 'error');
+                await loadUsers(); // Reload to revert
+            }
+        }
+
+        async function updateUserStatus(userId, status) {
+            try {
+                await apiRequest(`/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status })
+                });
+                showAlert('User status updated', 'success');
+                await loadUsers();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to update user status', 'error');
+                await loadUsers(); // Reload to revert
+            }
+        }
+
+        async function showUserDetails(userId) {
+            try {
+                const users = await apiRequest('/admin/users');
+                const user = users.find(u => u.user_id == userId);
+                if (!user) {
+                    showAlert('User not found', 'error');
+                    return;
+                }
+                
+                // Get department name if department_id exists
+                let departmentName = 'N/A';
+                if (user.department_id) {
+                    const departments = [
+                        { id: 1, name: 'Computer Science' },
+                        { id: 2, name: 'Engineering' },
+                        { id: 3, name: 'Business' },
+                        { id: 4, name: 'Arts & Sciences' },
+                        { id: 5, name: 'Medicine' },
+                        { id: 6, name: 'Law' }
+                    ];
+                    const dept = departments.find(d => d.id == user.department_id);
+                    departmentName = dept ? dept.name : `Department ID: ${user.department_id}`;
+                }
+                
+                const content = `
+                    <div style="line-height: 1.8;">
+                        <p><strong>User ID:</strong> ${user.user_id}</p>
+                        <p><strong>Name:</strong> ${user.first_name} ${user.last_name}</p>
+                        <p><strong>Email:</strong> ${user.email}</p>
+                        <p><strong>University ID:</strong> ${user.university_id || 'N/A'}</p>
+                        <p><strong>Phone Number:</strong> ${user.phone_number || 'N/A'}</p>
+                        <p><strong>Role:</strong> ${user.role}</p>
+                        <p><strong>Subrole:</strong> ${user.subrole || 'N/A'}</p>
+                        <p><strong>Department:</strong> ${departmentName}</p>
+                        <p><strong>Status:</strong> ${getStatusBadge(user.status)}</p>
+                        <p><strong>Account Created:</strong> ${formatDate(user.created_at)}</p>
+                    </div>
+                `;
+                document.getElementById('userDetailsContent').innerHTML = content;
+                document.getElementById('userDetailsModal').style.display = 'flex';
+            } catch (error) {
+                showAlert(error.message || 'Failed to load user details', 'error');
+            }
+        }
+
+        function closeUserDetailsModal() {
+            document.getElementById('userDetailsModal').style.display = 'none';
+        }
+        
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const userDetailsModal = document.getElementById('userDetailsModal');
+            if (event.target === userDetailsModal) {
+                closeUserDetailsModal();
+            }
+            const approvalModal = document.getElementById('approvalModal');
+            if (event.target === approvalModal) {
+                closeApprovalModal();
+            }
+        });
+
+        // Booking Approvals
+        async function loadPendingBookings() {
+            try {
+                const requests = await apiRequest('/admin/bookings/pending');
+                const div = document.getElementById('pendingBookingsList');
+                if (requests.length > 0) {
+                    div.innerHTML = requests.map(r => `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <h3>Booking Request #${r.request_id}</h3>
+                                    <p><strong>User:</strong> ${r.user?.first_name || ''} ${r.user?.last_name || ''} (${r.user?.email || 'N/A'})</p>
+                                    <p><strong>Resource:</strong> ${r.resource?.name || 'N/A'}</p>
+                                    <p><strong>Time:</strong> ${formatDate(r.start_time)} - ${formatDate(r.end_time)}</p>
+                                    <p><strong>Purpose:</strong> ${r.purpose || 'N/A'}</p>
+                                    <p><strong>Status:</strong> ${getStatusBadge(r.status)}</p>
+                                </div>
+                                <div style="margin-left: 1rem;">
+                                    <button class="btn btn-success" onclick="approveBooking(${r.request_id})">Approve</button>
+                                    <button class="btn btn-danger" onclick="rejectBooking(${r.request_id})" style="margin-top: 0.5rem;">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No pending booking requests</p>';
+                }
+            } catch (error) {
+                showAlert(error.message || 'Failed to load bookings', 'error');
+            }
+        }
+
+        async function approveBooking(requestId) {
+            if (confirm('Approve this booking request?')) {
+                try {
+                    await apiRequest(`/admin/bookings/${requestId}/approve`, { method: 'POST' });
+                    showAlert('Booking approved successfully', 'success');
+                    await loadPendingBookings();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message || 'Failed to approve booking', 'error');
+                }
+            }
+        }
+
+        async function rejectBooking(requestId) {
+            if (confirm('Reject this booking request?')) {
+                try {
+                    await apiRequest(`/admin/bookings/${requestId}/reject`, { method: 'POST' });
+                    showAlert('Booking rejected', 'success');
+                    await loadPendingBookings();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message || 'Failed to reject booking', 'error');
+                }
+            }
+        }
+
+        // Employment Approvals
+        async function loadPendingEmployment() {
+            try {
+                const applications = await apiRequest('/employment/pending');
+                const div = document.getElementById('pendingEmploymentList');
+                if (applications.length > 0) {
+                    div.innerHTML = applications.map(app => `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <h3>Application #${app.application_id}</h3>
+                                    <p><strong>Student:</strong> ${app.user?.first_name || ''} ${app.user?.last_name || ''} (${app.user?.email || 'N/A'})</p>
+                                    <p><strong>Job:</strong> ${app.job?.job_title || 'N/A'}</p>
+                                    <p><strong>Description:</strong> ${app.job?.description || 'N/A'}</p>
+                                    <p><strong>Salary:</strong> $${app.job?.salary || 'N/A'}/hour | <strong>Hours:</strong> ${app.job?.hours_per_week || 'N/A'}/week</p>
+                                    <p><strong>Semester:</strong> ${app.semester ? app.semester.charAt(0).toUpperCase() + app.semester.slice(1) : 'N/A'}</p>
+                                    <p><strong>Applied:</strong> ${formatDate(app.application_date)}</p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-left: 1rem;">
+                                    <button class="btn btn-success" onclick="approveEmployment(${app.application_id})">Approve</button>
+                                    <button class="btn btn-danger" onclick="rejectEmployment(${app.application_id})">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No pending employment applications</p>';
+                }
+            } catch (error) {
+                showAlert('Failed to load employment applications: ' + (error.message || 'Unknown error'), 'error');
+            }
+        }
+
+        async function approveEmployment(applicationId) {
+            if (confirm('Approve this employment application? This will automatically reject other pending applications for the same job and semester.')) {
+                try {
+                    await apiRequest(`/employment/approve/${applicationId}`, { method: 'POST' });
+                    showAlert('Employment application approved', 'success');
+                    await loadPendingEmployment();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message || 'Failed to approve application', 'error');
+                }
+            }
+        }
+
+        async function rejectEmployment(applicationId) {
+            const reason = prompt('Enter rejection reason (optional):');
+            try {
+                await apiRequest(`/employment/reject/${applicationId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason: reason || null })
+                });
+                showAlert('Employment application rejected', 'success');
+                await loadPendingEmployment();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to reject application', 'error');
+            }
+        }
+
+        // Event Approvals
+        async function loadPendingEvents() {
+            try {
+                const events = await apiRequest('/events/pending');
+                const div = document.getElementById('pendingEventsList');
+                if (events.length > 0) {
+                    div.innerHTML = events.map(event => {
+                        const organizerName = event.organizer_first_name && event.organizer_last_name 
+                            ? `${event.organizer_first_name} ${event.organizer_last_name}` 
+                            : 'Unknown Organizer';
+                        const organizerInfo = event.organizer_university_id 
+                            ? `${organizerName} (ID: ${event.organizer_university_id})`
+                            : organizerName;
+                        const emailPart = event.organizer_email ? `(${event.organizer_email})` : '';
+                        return `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <h3>${event.title || 'Untitled Event'}</h3>
+                                    <p><strong>Organizer:</strong> ${organizerInfo} ${emailPart}</p>
+                                    <p><strong>Description:</strong> ${event.description || 'N/A'}</p>
+                                    <p><strong>Location:</strong> ${event.location || 'N/A'}</p>
+                                    <p><strong>Date:</strong> ${formatDate(event.start_time || event.event_date)}</p>
+                                    ${event.end_time ? `<p><strong>End Time:</strong> ${formatDate(event.end_time)}</p>` : ''}
+                                    <p><strong>Capacity:</strong> ${event.capacity || 'N/A'}</p>
+                                    ${event.ticket_price !== undefined ? `<p><strong>Ticket Price:</strong> $${event.ticket_price || 0}</p>` : ''}
+                                    <p><strong>Created:</strong> ${formatDate(event.created_at)}</p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-left: 1rem;">
+                                    <button class="btn btn-success" onclick="approveEvent(${event.event_id})">Approve</button>
+                                    <button class="btn btn-danger" onclick="rejectEvent(${event.event_id})">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                        `;
+                    }).join('');
+                } else {
+                    div.innerHTML = '<p>No pending event requests</p>';
+                }
+            } catch (error) {
+                showAlert('Failed to load pending events: ' + (error.message || 'Unknown error'), 'error');
+            }
+        }
+
+        async function approveEvent(eventId) {
+            if (confirm('Approve this event? It will become visible to students.')) {
+                try {
+                    await apiRequest(`/events/approve/${eventId}`, { method: 'POST' });
+                    showAlert('Event approved', 'success');
+                    await loadPendingEvents();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message || 'Failed to approve event', 'error');
+                }
+            }
+        }
+
+        async function rejectEvent(eventId) {
+            const reason = prompt('Enter rejection reason (optional):');
+            try {
+                await apiRequest(`/events/reject/${eventId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason: reason || null })
+                });
+                showAlert('Event rejected', 'success');
+                await loadPendingEvents();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to reject event', 'error');
+            }
+        }
+
+        // Classroom Change Approvals
+        async function loadPendingClassroomChange() {
+            try {
+                const requests = await apiRequest('/faculty/classroom-change/pending');
+                const div = document.getElementById('pendingClassroomChangeList');
+                if (requests.length > 0) {
+                    div.innerHTML = requests.map(req => `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div style="flex: 1;">
+                                    <h3>Request #${req.request_id}</h3>
+                                    <p><strong>Faculty:</strong> ${req.faculty?.first_name || ''} ${req.faculty?.last_name || ''} (${req.faculty?.email || 'N/A'})</p>
+                                    <p><strong>Current Classroom:</strong> ${req.current_classroom || 'N/A'}</p>
+                                    <p><strong>Requested Classroom:</strong> ${req.new_classroom || 'N/A'}</p>
+                                    <p><strong>Course Code:</strong> ${req.course_code || 'N/A'}</p>
+                                    <p><strong>Reason:</strong> ${req.reason ? req.reason.replace('_', ' ').charAt(0).toUpperCase() + req.reason.replace('_', ' ').slice(1) : 'N/A'}</p>
+                                    ${req.details ? `<p><strong>Details:</strong> ${req.details}</p>` : ''}
+                                    <p><strong>Submitted:</strong> ${formatDate(req.created_at)}</p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem; margin-left: 1rem;">
+                                    <button class="btn btn-success" onclick="approveClassroomChange(${req.request_id})">Approve</button>
+                                    <button class="btn btn-danger" onclick="rejectClassroomChange(${req.request_id})">Reject</button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No pending classroom change requests</p>';
+                }
+            } catch (error) {
+                showAlert('Failed to load classroom change requests: ' + (error.message || 'Unknown error'), 'error');
+            }
+        }
+
+        async function approveClassroomChange(requestId) {
+            if (confirm('Approve this classroom change request?')) {
+                try {
+                    await apiRequest(`/faculty/classroom-change/approve/${requestId}`, { method: 'POST' });
+                    showAlert('Classroom change request approved', 'success');
+                    await loadPendingClassroomChange();
+                    await loadDashboard();
+                } catch (error) {
+                    showAlert(error.message || 'Failed to approve request', 'error');
+                }
+            }
+        }
+
+        async function rejectClassroomChange(requestId) {
+            const reason = prompt('Enter rejection reason (optional):');
+            try {
+                await apiRequest(`/faculty/classroom-change/reject/${requestId}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason: reason || null })
+                });
+                showAlert('Classroom change request rejected', 'success');
+                await loadPendingClassroomChange();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to reject request', 'error');
+            }
+        }
+
+        // Issue Report Oversight
+        async function loadIssues() {
+            try {
+                const issues = await apiRequest('/issues/all');
+                const allUsers = await apiRequest('/admin/users').catch(() => []);
+                const maintenanceStaff = allUsers.filter(u => u.role === 'maintenance' && u.status === 'active');
+                const div = document.getElementById('issuesList');
+                if (issues.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Assigned To</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${issues.map(i => {
+                                    // Filter staff by category: cleaning/maintenance -> cleaning subrole, IT -> it_support subrole
+                                    const issueCategory = i.category === 'maintenance' ? 'cleaning' : i.category;
+                                    const filteredStaff = maintenanceStaff.filter(m => {
+                                        if (issueCategory === 'cleaning') {
+                                            return m.subrole === 'cleaning';
+                                        } else if (issueCategory === 'IT') {
+                                            return m.subrole === 'it_support';
+                                        }
+                                        return true; // For other categories, show all
+                                    });
+                                    
+                                    const staffOptions = filteredStaff.map(m => {
+                                        const subroleDisplay = m.subrole === 'cleaning' ? 'Cleaning' : m.subrole === 'it_support' ? 'IT Support' : m.subrole || 'Maintenance';
+                                        const selected = i.assigned_user_id == m.user_id ? 'selected' : '';
+                                        return `<option value="${m.user_id}" ${selected}>${m.first_name} ${m.last_name} (${subroleDisplay})</option>`;
+                                    }).join('');
+                                    
+                                    return `
+                                    <tr>
+                                        <td>#${i.issue_id}</td>
+                                        <td>${i.category === 'maintenance' ? 'Cleaning' : i.category}</td>
+                                        <td>${i.location}</td>
+                                        <td>${getStatusBadge(i.status, 'issue')}</td>
+                                        <td>${i.priority}</td>
+                                        <td>
+                                            ${i.assigned_user_id ? `User #${i.assigned_user_id}` : 'Unassigned'}
+                                        </td>
+                                        <td>
+                                            <select id="assign-${i.issue_id}" class="form-control" onchange="reassignIssue(${i.issue_id}, this.value)">
+                                                <option value="">Reassign...</option>
+                                                ${staffOptions}
+                                            </select>
+                                        </td>
+                                    </tr>
+                                `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No issues found</p>';
+                }
+            } catch (error) {
+                showAlert(error.message || 'Failed to load issues', 'error');
+            }
+        }
+
+        async function reassignIssue(issueId, userId) {
+            if (!userId) return;
+            try {
+                await apiRequest(`/admin/issues/${issueId}/assign`, {
+                    method: 'POST',
+                    body: JSON.stringify({ user_id: userId })
+                });
+                showAlert('Issue reassigned successfully', 'success');
+                await loadIssues();
+            } catch (error) {
+                showAlert(error.message || 'Failed to reassign issue', 'error');
+                await loadIssues(); // Reload to revert
+            }
+        }
+
+        // Resource Management
+        async function loadResources() {
+            try {
+                const resources = await apiRequest('/bookings/resources');
+                const div = document.getElementById('resourcesList');
+                if (resources.length > 0) {
+                    div.innerHTML = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Building</th>
+                                    <th>Capacity</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${resources.map(r => `
+                                    <tr>
+                                        <td>${r.name}</td>
+                                        <td>${r.resource_type}</td>
+                                        <td>${r.building}</td>
+                                        <td>${r.capacity}</td>
+                                        <td>${getStatusBadge(r.status)}</td>
+                                        <td>
+                                            <select id="resource-status-${r.resource_id}" class="form-control" onchange="updateResourceStatus(${r.resource_id}, this.value)">
+                                                <option value="active" ${r.status === 'active' ? 'selected' : ''}>Active</option>
+                                                <option value="under_maintenance" ${r.status === 'under_maintenance' ? 'selected' : ''}>Under Maintenance</option>
+                                                <option value="closed" ${r.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    div.innerHTML = '<p>No resources found</p>';
+                }
+            } catch (error) {
+                showAlert(error.message || 'Failed to load resources', 'error');
+            }
+        }
+
+        async function updateResourceStatus(resourceId, status) {
+            try {
+                await apiRequest(`/admin/resources/${resourceId}/status`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ status })
+                });
+                showAlert('Resource status updated', 'success');
+                await loadResources();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to update resource status', 'error');
+                await loadResources(); // Reload to revert
+            }
+        }
+
+        document.getElementById('addResourceForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await apiRequest('/admin/resources', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: document.getElementById('resourceName').value,
+                        resource_type: document.getElementById('resourceType').value,
+                        building: document.getElementById('resourceBuilding').value,
+                        capacity: parseInt(document.getElementById('resourceCapacity').value)
+                    })
+                });
+                showAlert('Resource added successfully', 'success');
+                document.getElementById('addResourceForm').reset();
+                await loadResources();
+                await loadDashboard();
+            } catch (error) {
+                showAlert(error.message || 'Failed to add resource', 'error');
+            }
+        });
+
+        // Notifications
+        async function loadNotifications() {
+            try {
+                const notifications = await apiRequest('/notifications/all').catch(() => []);
+                const div = document.getElementById('notificationsList');
+                if (notifications.length > 0) {
+                    const recent = notifications.slice(0, 20).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    div.innerHTML = recent.map(n => `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <p><strong>${n.message}</strong></p>
+                            <small class="text-muted">${formatDate(n.created_at)}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    div.innerHTML = '<p>No notifications</p>';
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        document.getElementById('sendNotificationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const message = document.getElementById('notificationMessage').value;
+                await apiRequest('/admin/notifications/broadcast', {
+                    method: 'POST',
+                    body: JSON.stringify({ message })
+                });
+                showAlert('Message sent successfully', 'success');
+                document.getElementById('notificationMessage').value = '';
+                await loadNotifications();
+            } catch (error) {
+                showAlert(error.message || 'Failed to send message', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+# Dependencies (if using npm in frontend)
+node_modules/
+package-lock.json
+
+# Environment variables (if any)
+.env
+.env.local
+.env.production
+
+# Logs
+*.log
+
+# Uploads
+public/uploads/*
+!public/uploads/.gitkeep
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build files (if any)
+dist/
+build/
+
