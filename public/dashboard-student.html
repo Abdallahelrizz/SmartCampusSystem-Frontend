@@ -1158,15 +1158,18 @@
                 const dorms = await apiRequest('/dorms/available');
                 const div = document.getElementById('availableDorms');
                 div.innerHTML = dorms.map(d => {
-                    const canBook = !!d.dorm_id && d.status === 'available';
+                    // All dorms returned from backend are available (filtered by catalog status = 'available')
+                    // Enable button if dorm_id exists (linked to dormUnits) or use available_dorm_id as fallback
+                    const dormId = d.dorm_id || d.available_dorm_id;
+                    const canBook = dormId && (d.catalog_status === 'available' || d.status === 'available');
                     return `
                     <div class="card" style="margin-bottom: 1rem;">
                         <h3>${d.building} - ${d.unit_number}</h3>
                         <p>Capacity: ${d.capacity} | Gender: ${d.gender_policy}</p>
                         <p><strong>Price: $${d.price_per_semester || 'N/A'} per semester</strong></p>
-                        <p>Status: ${getStatusBadge(d.status)}</p>
+                        <p>Status: ${getStatusBadge(d.catalog_status || d.status)}</p>
                         ${canBook 
-                            ? `<button class="btn btn-primary" onclick="bookDorm(${d.dorm_id})">Book Dorm</button>` 
+                            ? `<button class="btn btn-primary" onclick="bookDorm(${dormId})">Book Dorm</button>` 
                             : `<button class="btn btn-secondary" disabled>Unavailable</button>`}
                     </div>
                 `;
@@ -1266,7 +1269,10 @@
                 const jobs = await apiRequest('/employment/jobs');
                 const div = document.getElementById('employmentJobs');
                 div.innerHTML = jobs.map(j => {
-                    const canApply = !!j.job_id && j.status === 'open';
+                    // All jobs returned from backend are available (filtered by catalog status = 'open')
+                    // Enable button if job_id exists (linked to studentEmployment) or use available_job_id as fallback
+                    const jobId = j.job_id || j.available_job_id;
+                    const canApply = jobId && (j.catalog_status === 'open' || j.status === 'open');
                     return `
                     <div class="card" style="margin-bottom: 1rem;">
                         <h3>${j.job_title}</h3>
@@ -1277,7 +1283,7 @@
                             ${j.department_name ? ` | Department: ${j.department_name}` : ''}
                         </p>
                         ${canApply 
-                            ? `<button class="btn btn-primary" onclick="applyForJob(${j.job_id})">Apply</button>`
+                            ? `<button class="btn btn-primary" onclick="applyForJob(${jobId})">Apply</button>`
                             : `<button class="btn btn-secondary" disabled>Unavailable</button>`}
                     </div>
                 `;
