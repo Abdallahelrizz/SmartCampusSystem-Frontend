@@ -309,7 +309,7 @@
             checkAuth();
             const user = getCurrentUser();
             if (!user || user.role !== 'admin') {
-                window.location.href = '/login';
+                window.location.href = '/login.html';
                 return;
             }
             

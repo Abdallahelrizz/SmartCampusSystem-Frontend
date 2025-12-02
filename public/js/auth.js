@@ -127,16 +127,16 @@ async function signup(userData) {
 function logout() {
     removeAuthToken();
     localStorage.removeItem('user');
-    window.location.href = '/login';
+    window.location.href = '/login.html';
 }
 
 // Check authentication on page load
 function checkAuth() {
     const path = window.location.pathname;
-    const isPublicPage = path === '/' || path.includes('login') || path.includes('signup');
+    const isPublicPage = path === '/' || path === '/index.html' || path.includes('login') || path.includes('signup');
     
     if (!isAuthenticated() && !isPublicPage) {
-        window.location.href = '/login';
+        window.location.href = '/login.html';
     }
 }
 
@@ -144,9 +144,9 @@ function checkAuth() {
 function redirectToDashboard(role) {
     const validRoles = ['student', 'faculty', 'maintenance', 'admin'];
     if (validRoles.includes(role)) {
-        window.location.href = `/dashboard/${role}`;
+        window.location.href = `/dashboard-${role}.html`;
     } else {
-        window.location.href = '/login';
+        window.location.href = '/login.html';
     }
 }
 
