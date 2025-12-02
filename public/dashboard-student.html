@@ -1157,15 +1157,20 @@
             try {
                 const dorms = await apiRequest('/dorms/available');
                 const div = document.getElementById('availableDorms');
-                div.innerHTML = dorms.map(d => `
+                div.innerHTML = dorms.map(d => {
+                    const canBook = !!d.dorm_id;
+                    return `
                     <div class="card" style="margin-bottom: 1rem;">
                         <h3>${d.building} - ${d.unit_number}</h3>
                         <p>Capacity: ${d.capacity} | Gender: ${d.gender_policy}</p>
                         <p><strong>Price: $${d.price_per_semester || 'N/A'} per semester</strong></p>
                         <p>Status: ${getStatusBadge(d.status)}</p>
-                        <button class="btn btn-primary" onclick="bookDorm(${d.dorm_id})">Book Dorm</button>
+                        ${canBook 
+                            ? `<button class="btn btn-primary" onclick="bookDorm(${d.dorm_id})">Book Dorm</button>` 
+                            : `<button class="btn btn-secondary" disabled>Contact Housing Office to Book</button>`}
                     </div>
-                `).join('');
+                `;
+                }).join('');
                 
                 // Load user's housing reservation
                 await loadMyHousingReservation();
@@ -1260,14 +1265,23 @@
             try {
                 const jobs = await apiRequest('/employment/jobs');
                 const div = document.getElementById('employmentJobs');
-                div.innerHTML = jobs.map(j => `
+                div.innerHTML = jobs.map(j => {
+                    const canApply = !!j.job_id;
+                    return `
                     <div class="card" style="margin-bottom: 1rem;">
                         <h3>${j.job_title}</h3>
                         <p>${j.description}</p>
-                        <p>Salary: $${j.salary}/hour | Hours: ${j.hours_per_week}/week</p>
-                        <button class="btn btn-primary" onclick="applyForJob(${j.job_id})">Apply</button>
+                        <p>
+                            Salary: ${j.salary ? `$${j.salary}/hour` : 'N/A'} 
+                            | Hours: ${j.hours_per_week ? j.hours_per_week + '/week' : 'N/A'}
+                            ${j.department_name ? ` | Department: ${j.department_name}` : ''}
+                        </p>
+                        ${canApply 
+                            ? `<button class="btn btn-primary" onclick="applyForJob(${j.job_id})">Apply</button>`
+                            : `<button class="btn btn-secondary" disabled>Contact HR to Apply</button>`}
                     </div>
-                `).join('');
+                `;
+                }).join('');
                 
                 // Load user's employment status
                 await loadMyEmploymentStatus();
