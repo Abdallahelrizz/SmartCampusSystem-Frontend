@@ -282,9 +282,8 @@
         </div>
     </div>
 
-    <script src="/js/config.js"></script>
-    <script src="/js/utils.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
     <script>
         // Global functions that need to be accessible from HTML onclick handlers
         function showSection(sectionName) {
@@ -306,10 +305,10 @@
 
         // Wait for DOM to be ready before initializing
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            const user = getCurrentUser();
+        checkAuth();
+        const user = getCurrentUser();
             if (!user || user.role !== 'admin') {
-                window.location.href = '/login.html';
+            window.location.href = '/login.html';
                 return;
             }
             
@@ -383,9 +382,9 @@
                 const totalUsersEl = document.getElementById('totalUsers');
                 if (totalUsersEl) {
                     totalUsersEl.textContent = users.length;
-                    const students = users.filter(u => u.role === 'student').length;
-                    const faculty = users.filter(u => u.role === 'faculty').length;
-                    const maintenance = users.filter(u => u.role === 'maintenance').length;
+                const students = users.filter(u => u.role === 'student').length;
+                const faculty = users.filter(u => u.role === 'faculty').length;
+                const maintenance = users.filter(u => u.role === 'maintenance').length;
                     const admins = users.filter(u => u.role === 'admin').length;
                     const userBreakdownEl = document.getElementById('userBreakdown');
                     if (userBreakdownEl) {

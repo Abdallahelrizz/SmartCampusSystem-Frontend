@@ -1,10 +1,6 @@
-// ======================================================
-// AUTH.JS - Authentication and API utilities
-// ======================================================
-
-// ======================================================
-// Token Management
-// ======================================================
+// Authentication utilities
+// API_BASE_URL is set in config.js or via window.API_BASE_URL
+const API_BASE = window.API_BASE_URL || '/api';
 
 function getAuthToken() {
     return localStorage.getItem('token');
@@ -18,16 +14,12 @@ function removeAuthToken() {
     localStorage.removeItem('token');
 }
 
-// ======================================================
-// User Management
-// ======================================================
-
 function getCurrentUser() {
     try {
         const user = localStorage.getItem('user');
-        return user ? JSON.parse(user) : null;
+        return user ? JSON.parse(user) : {};
     } catch (e) {
-        return null;
+        return {};
     }
 }
 
@@ -35,41 +27,46 @@ function setCurrentUser(user) {
     localStorage.setItem('user', JSON.stringify(user));
 }
 
-// ======================================================
-// Authentication Status
-// ======================================================
-
 function isAuthenticated() {
     return !!getAuthToken();
 }
 
-// ======================================================
-// API Request Helper
-// ======================================================
-
-async function apiRequest(path, options = {}) {
-    const API_BASE = window.API_BASE_URL;
-    const url = `${API_BASE}${path}`;
+function getAuthHeaders() {
     const token = getAuthToken();
-    
-    const headers = {
+    return {
         'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-        ...options.headers
+        ...(token && { 'Authorization': `Bearer ${token}` })
     };
+}
 
+async function apiRequest(endpoint, options = {}) {
+    const url = `${API_BASE}${endpoint}`;
+    const isFormData = options.body instanceof FormData;
+    
     const config = {
         ...options,
-        headers: headers
+        headers: {
+            ...(isFormData ? {} : getAuthHeaders()), // Don't set Content-Type for FormData
+            ...options.headers
+        }
     };
 
-    if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
+    // Add Authorization header separately for FormData
+    if (isFormData) {
+        const token = getAuthToken();
+        if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+
+    if (options.body && typeof options.body === 'object' && !isFormData) {
         config.body = JSON.stringify(options.body);
     }
 
     try {
         const response = await fetch(url, config);
         
+        // Handle non-JSON responses
         let data;
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
@@ -86,94 +83,78 @@ async function apiRequest(path, options = {}) {
         return data;
     } catch (error) {
         console.error('API Error:', error);
-        throw error;
+        if (error.message) {
+            throw error;
+        }
+        throw new Error('Network error. Please check your connection.');
     }
 }
 
-// ======================================================
-// Login Function
-// ======================================================
+// Login function
+async function login(email, password) {
+    const data = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: { email, password }
+    });
 
-async function doLogin(email, password) {
-    try {
-        const result = await apiRequest('/auth/login', {
-            method: 'POST',
-            body: { email, password }
-        });
-
-        if (result.token) {
-            setAuthToken(result.token);
-        }
-        if (result.user) {
-            setCurrentUser(result.user);
-        }
-
-        return result;
-    } catch (error) {
-        console.error('Login error:', error);
-        throw error;
+    if (data.token) {
+        setAuthToken(data.token);
     }
+    if (data.user) {
+        setCurrentUser(data.user);
+    }
+    return data;
 }
 
-// ======================================================
-// Signup Function
-// ======================================================
+// Signup function
+async function signup(userData) {
+    const data = await apiRequest('/auth/signup', {
+        method: 'POST',
+        body: userData
+    });
 
-async function doSignup(userData) {
-    try {
-        const result = await apiRequest('/auth/signup', {
-            method: 'POST',
-            body: userData
-        });
-
-        // Note: New users are pending approval, so no token is returned
-        // Only set user data if provided
-        if (result.user) {
-            setCurrentUser(result.user);
-        }
-
-        return result;
-    } catch (error) {
-        console.error('Signup error:', error);
-        throw error;
+    if (data.token) {
+        setAuthToken(data.token);
     }
+    if (data.user) {
+        setCurrentUser(data.user);
+    }
+    return data;
 }
 
-// ======================================================
-// Logout Function
-// ======================================================
-
+// Logout function
 function logout() {
     removeAuthToken();
     localStorage.removeItem('user');
-    window.location.href = '/login.html';
+    window.location.href = '/login';
 }
 
-// ======================================================
-// Redirect to Dashboard
-// ======================================================
-
-function redirectToDashboard(role) {
-    const validRoles = ['student', 'faculty', 'maintenance', 'admin'];
-    if (validRoles.includes(role)) {
-        window.location.href = `/dashboard-${role}.html`;
-    } else {
-        window.location.href = '/login.html';
+// Check authentication on page load
+function checkAuth() {
+    const path = window.location.pathname;
+    const isPublicPage = path === '/' || path.includes('login') || path.includes('signup');
+    
+    if (!isAuthenticated() && !isPublicPage) {
+        window.location.href = '/login';
     }
 }
 
-// ======================================================
-// Expose functions globally
-// ======================================================
+// Redirect based on role
+function redirectToDashboard(role) {
+    const validRoles = ['student', 'faculty', 'maintenance', 'admin'];
+    if (validRoles.includes(role)) {
+        window.location.href = `/dashboard/${role}`;
+    } else {
+        window.location.href = '/login';
+    }
+}
 
-window.apiRequest = apiRequest;
-window.doLogin = doLogin;
-window.doSignup = doSignup;
+// Make functions available globally
+window.login = login;
+window.signup = signup;
 window.logout = logout;
+window.checkAuth = checkAuth;
+window.redirectToDashboard = redirectToDashboard;
 window.isAuthenticated = isAuthenticated;
 window.getCurrentUser = getCurrentUser;
-window.setCurrentUser = setCurrentUser;
-window.getAuthToken = getAuthToken;
-window.setAuthToken = setAuthToken;
-window.removeAuthToken = removeAuthToken;
-window.redirectToDashboard = redirectToDashboard;
+window.apiRequest = apiRequest;

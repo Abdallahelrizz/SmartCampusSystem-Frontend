@@ -480,9 +480,8 @@
         </div>
     </div>
 
-    <script src="/js/config.js"></script>
-    <script src="/js/utils.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
     <script>
         checkAuth();
         const user = getCurrentUser();
@@ -1146,8 +1145,8 @@
                             <h4>${a.title || 'Announcement'}</h4>
                             <p>${(a.message || a.content || '').substring(0, 100)}${(a.message || a.content || '').length > 100 ? '...' : ''}</p>
                             <small>${formatDate(a.created_at)} | Priority: ${a.priority || 'normal'}</small>
-                        </div>
-                    `).join('');
+                    </div>
+                `).join('');
                 } else {
                     div.innerHTML = '<p>No announcements from other departments</p>';
                 }

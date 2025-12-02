@@ -14,8 +14,8 @@
                 <span class="logo-text">Smart Campus</span>
             </div>
             <ul class="nav-links">
-                <li><a href="/index.html">Home</a></li>
-                <li><a href="/login.html">Login</a></li>
+                <li><a href="/">Home</a></li>
+                <li><a href="/login">Login</a></li>
             </ul>
         </div>
     </nav>
@@ -166,15 +166,14 @@
             
             <div class="auth-links">
                 <p>
-                    <a href="/login.html">Already have an account? Sign in</a>
+                    <a href="/login">Already have an account? Sign in</a>
                 </p>
             </div>
         </div>
     </div>
 
-    <script src="/js/config.js"></script>
-    <script src="/js/utils.js"></script>
     <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
     <script>
         // Check if already logged in
         if (isAuthenticated()) {
@@ -295,7 +294,7 @@
             };
 
             try {
-                const data = await doSignup(userData);
+                const data = await signup(userData);
                 // Check if user was created but is pending approval
                 if (data.message && data.message.includes('pending approval')) {
                     showAlert(data.message, 'info');
@@ -304,10 +303,10 @@
                     }, 3000);
                 } else if (data.token) {
                     // User was approved immediately (shouldn't happen with new system, but handle it)
-                    showAlert('Account created successfully! Redirecting...', 'success');
-                    setTimeout(() => {
-                        redirectToDashboard(data.user.role);
-                    }, 1500);
+                showAlert('Account created successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    redirectToDashboard(data.user.role);
+                }, 1500);
                 } else {
                     // Pending approval
                     showAlert('Account created successfully! Your account is pending approval from an administrator. You will be redirected to login.', 'info');
