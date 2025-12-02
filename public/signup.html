@@ -173,7 +173,6 @@
     </div>
 
     <script src="/js/config.js"></script>
-    <script src="/js/config.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
     <script>
@@ -301,7 +300,7 @@
                 if (data.message && data.message.includes('pending approval')) {
                     showAlert(data.message, 'info');
                     setTimeout(() => {
-                        window.location.href = '/login.html';
+                        window.location.href = '/login';
                     }, 3000);
                 } else if (data.token) {
                     // User was approved immediately (shouldn't happen with new system, but handle it)
@@ -313,7 +312,7 @@
                     // Pending approval
                     showAlert('Account created successfully! Your account is pending approval from an administrator. You will be redirected to login.', 'info');
                     setTimeout(() => {
-                        window.location.href = '/login.html';
+                        window.location.href = '/login';
                     }, 3000);
                 }
             } catch (error) {

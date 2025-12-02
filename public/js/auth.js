@@ -1,8 +1,7 @@
 // Authentication utilities
-// API_BASE_URL is set in config.js from NEXT_PUBLIC_API_URL
-const API_BASE = window.API_BASE_URL || (typeof process !== 'undefined' && process.env && process.env.NEXT_PUBLIC_API_URL) 
-    ? process.env.NEXT_PUBLIC_API_URL 
-    : '/api';
+// API_BASE_URL is set in config.js from NEXT_PUBLIC_API_URL (injected by server)
+// Falls back to '/api' for same-origin requests
+const API_BASE = window.API_BASE_URL || '/api';
 
 function getAuthToken() {
     return localStorage.getItem('token');
