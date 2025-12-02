@@ -21,7 +21,7 @@ window.API_BASE_URL = window.API_BASE_URL || (() => {
     if (hostname.includes('vercel.app')) {
         // TODO: Replace with your Railway backend URL
         // Get this from Railway → Settings → Public Domain
-        const RAILWAY_URL = 'https://smartcampussystem-backend-production.up.railway.app/'; // ⚠️ CHANGE THIS!
+        const RAILWAY_URL = 'https://smartcampussystem-backend-production.up.railway.app'; // ⚠️ CHANGE THIS!
         
         if (RAILWAY_URL.includes('your-backend')) {
             console.error('❌ Railway backend URL not configured!');
@@ -30,7 +30,9 @@ window.API_BASE_URL = window.API_BASE_URL || (() => {
             return '/api'; // This will fail, but prevents silent errors
         }
         
-        return `${RAILWAY_URL}/api`;
+        // Remove trailing slash if present, then add /api
+        const cleanUrl = RAILWAY_URL.replace(/\/+$/, '');
+        return `${cleanUrl}/api`;
     }
     
     // Production: same origin (backend serves frontend)
