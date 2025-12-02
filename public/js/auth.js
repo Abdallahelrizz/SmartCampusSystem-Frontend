@@ -1,161 +1,94 @@
-// Authentication utilities
-// API_BASE_URL is set in config.js from NEXT_PUBLIC_API_URL (injected by server)
-// Falls back to '/api' for same-origin requests
-const API_BASE = window.API_BASE_URL || '/api';
+// ======================================================
+// AUTH.JS - FINAL FIXED VERSION
+// ======================================================
 
-function getAuthToken() {
-    return localStorage.getItem('token');
-}
-
-function setAuthToken(token) {
-    localStorage.setItem('token', token);
-}
-
-function removeAuthToken() {
-    localStorage.removeItem('token');
-}
-
-function getCurrentUser() {
-    try {
-        const user = localStorage.getItem('user');
-        return user ? JSON.parse(user) : {};
-    } catch (e) {
-        return {};
-    }
-}
-
-function setCurrentUser(user) {
-    localStorage.setItem('user', JSON.stringify(user));
-}
-
-function isAuthenticated() {
-    return !!getAuthToken();
-}
-
-function getAuthHeaders() {
-    const token = getAuthToken();
-    return {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
-    };
-}
-
-async function apiRequest(endpoint, options = {}) {
-    const url = `${API_BASE}${endpoint}`;
-    const isFormData = options.body instanceof FormData;
-    
-    const config = {
-        ...options,
-        headers: {
-            ...(isFormData ? {} : getAuthHeaders()), // Don't set Content-Type for FormData
-            ...options.headers
-        }
-    };
-
-    // Add Authorization header separately for FormData
-    if (isFormData) {
-        const token = getAuthToken();
-        if (token) {
-            config.headers['Authorization'] = `Bearer ${token}`;
-        }
-    }
-
-    if (options.body && typeof options.body === 'object' && !isFormData) {
-        config.body = JSON.stringify(options.body);
-    }
+// Helper function for API requests
+async function apiRequest(path, options = {}) {
+    const API_BASE = window.API_BASE_URL; // ALWAYS correct from config.js
+    const url = `${API_BASE}${path}`;
 
     try {
-        const response = await fetch(url, config);
-        
-        // Handle non-JSON responses
-        let data;
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-        } else {
-            const text = await response.text();
-            throw new Error(text || 'Request failed');
-        }
+        const response = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json"
+            },
+            credentials: "include",
+            ...options
+        });
 
         if (!response.ok) {
-            throw new Error(data.error || data.message || `Request failed with status ${response.status}`);
+            const errText = await response.text();
+            throw new Error(errText || "Request failed");
         }
 
-        return data;
+        return await response.json();
     } catch (error) {
-        console.error('API Error:', error);
-        if (error.message) {
-            throw error;
+        console.error("API Error:", error);
+        throw error;
+    }
+}
+
+// LOGIN FUNCTION
+async function login(event) {
+    event.preventDefault();
+
+    const email = document.getElementById("email")?.value.trim();
+    const password = document.getElementById("password")?.value.trim();
+
+    if (!email || !password) {
+        alert("Please enter your email and password.");
+        return;
+    }
+
+    try {
+        const result = await apiRequest("/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password })
+        });
+
+        console.log("Login result:", result);
+
+        if (result.role) {
+            window.location.href = `/dashboard-${result.role}.html`;
+        } else {
+            alert("Unexpected login response. Contact support.");
         }
-        throw new Error('Network error. Please check your connection.');
+    } catch (error) {
+        alert("Invalid email or password.");
+        console.error(error);
     }
 }
 
-// Login function
-async function login(email, password) {
-    const data = await apiRequest('/auth/login', {
-        method: 'POST',
-        body: { email, password }
-    });
+// SIGNUP FUNCTION
+async function signup(event) {
+    event.preventDefault();
 
-    if (data.token) {
-        setAuthToken(data.token);
+    const name = document.getElementById("name")?.value.trim();
+    const email = document.getElementById("email")?.value.trim();
+    const password = document.getElementById("password")?.value.trim();
+    const role = document.getElementById("role")?.value.trim();
+
+    if (!name || !email || !password || !role) {
+        alert("All fields are required.");
+        return;
     }
-    if (data.user) {
-        setCurrentUser(data.user);
-    }
-    return data;
-}
 
-// Signup function
-async function signup(userData) {
-    const data = await apiRequest('/auth/signup', {
-        method: 'POST',
-        body: userData
-    });
+    try {
+        const result = await apiRequest("/auth/signup", {
+            method: "POST",
+            body: JSON.stringify({ name, email, password, role })
+        });
 
-    if (data.token) {
-        setAuthToken(data.token);
-    }
-    if (data.user) {
-        setCurrentUser(data.user);
-    }
-    return data;
-}
+        console.log("Signup result:", result);
 
-// Logout function
-function logout() {
-    removeAuthToken();
-    localStorage.removeItem('user');
-    window.location.href = '/login.html';
-}
-
-// Check authentication on page load
-function checkAuth() {
-    const path = window.location.pathname;
-    const isPublicPage = path === '/' || path === '/index.html' || path.includes('login') || path.includes('signup');
-    
-    if (!isAuthenticated() && !isPublicPage) {
-        window.location.href = '/login.html';
+        alert("Signup successful! You can now login.");
+        window.location.href = "/login.html";
+    } catch (error) {
+        alert("Signup failed. Email may already exist.");
+        console.error(error);
     }
 }
 
-// Redirect based on role
-function redirectToDashboard(role) {
-    const validRoles = ['student', 'faculty', 'maintenance', 'admin'];
-    if (validRoles.includes(role)) {
-        window.location.href = `/dashboard-${role}.html`;
-    } else {
-        window.location.href = '/login.html';
-    }
-}
-
-// Make functions available globally
+// Expose functions globally
 window.login = login;
 window.signup = signup;
-window.logout = logout;
-window.checkAuth = checkAuth;
-window.redirectToDashboard = redirectToDashboard;
-window.isAuthenticated = isAuthenticated;
-window.getCurrentUser = getCurrentUser;
-window.apiRequest = apiRequest;
