@@ -111,7 +111,8 @@ function getStatusBadge(status, context = '') {
         'unavailable': 'badge-danger',
         'occupied': 'badge-warning',
         'under_maintenance': 'badge-warning',
-        'reserved': 'badge-info'
+        'reserved': 'badge-info',
+        'filled': 'badge-danger'
     };
     
     const badgeClass = statusMap[statusKey] || 'badge-info';
