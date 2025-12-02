@@ -51,32 +51,37 @@ async function apiRequest(endpoint, options = {}) {
     const isFormData = options.body instanceof FormData;
     
     const config = {
-        ...options,
-        headers: {
-            ...(isFormData ? {} : getAuthHeaders()), // Don't set Content-Type for FormData
-            ...options.headers // Allow overriding headers
-        }
+        method: options.method || 'GET',
+        headers: {}
     };
     
-    // Ensure Content-Type is set for JSON requests
-    if (!isFormData && !config.headers['Content-Type'] && !options.headers?.['Content-Type']) {
-        config.headers['Content-Type'] = 'application/json';
-    }
-
-    // Add Authorization header separately for FormData
+    // Don't set Content-Type for FormData - browser will set it with boundary
     if (isFormData) {
+        // For FormData, only set Authorization header
         const token = getAuthToken();
         if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
         }
-    }
-
-    if (options.body && typeof options.body === 'object' && !isFormData) {
-        config.body = JSON.stringify(options.body);
+        config.body = options.body;
+    } else {
+        // For JSON requests, set Content-Type and stringify body
+        const authHeaders = getAuthHeaders();
+        config.headers = { ...authHeaders };
+        
+        if (options.body && typeof options.body === 'object') {
+            config.body = JSON.stringify(options.body);
+        } else if (options.body) {
+            config.body = options.body;
+        }
+        
+        // Allow overriding headers
+        if (options.headers) {
+            config.headers = { ...config.headers, ...options.headers };
+        }
     }
 
     try {
-        console.log(`[API Request] ${options.method || 'GET'} ${url}`);
+        console.log(`[API Request] ${config.method} ${url}`, isFormData ? '(FormData)' : '');
         const response = await fetch(url, config);
         
         console.log(`[API Response] ${response.status} ${response.statusText} for ${url}`);
@@ -99,7 +104,7 @@ async function apiRequest(endpoint, options = {}) {
 
         return data;
     } catch (error) {
-        console.error(`[API Error] ${options.method || 'GET'} ${url}:`, error);
+        console.error(`[API Error] ${config.method} ${url}:`, error);
         if (error.message) {
             throw error;
         }

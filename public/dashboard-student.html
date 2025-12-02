@@ -362,18 +362,6 @@
         </section>
     </div>
 
-    <!-- Chatbot -->
-    <div class="chatbot-container">
-        <button class="chatbot-button" onclick="toggleChatbot()">💬</button>
-        <div class="chatbot-window" id="chatbotWindow">
-            <div class="chatbot-messages" id="chatbotMessages"></div>
-            <div class="chatbot-input">
-                <input type="text" id="chatbotInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') sendChatbotMessage()">
-                <button class="btn btn-primary" onclick="sendChatbotMessage()">Send</button>
-            </div>
-        </div>
-    </div>
-
     <script src="/js/config.js"></script>
     <script src="/js/auth.js"></script>
     <script src="/js/utils.js"></script>
@@ -752,15 +740,17 @@
                     formData.append('file', fileInput.files[0]);
                 }
 
-                await apiRequest('/issues', {
+                const response = await apiRequest('/issues', {
                     method: 'POST',
                     body: formData
                 });
                 showAlert('Issue reported successfully', 'success');
                 document.getElementById('issueForm').reset();
-                loadMyIssues();
+                await loadMyIssues();
+                await loadDashboard();
             } catch (error) {
-                showAlert(error.message, 'error');
+                console.error('Error reporting issue:', error);
+                showAlert(error.message || 'Failed to report issue. Please try again.', 'error');
             }
         });
 
@@ -788,7 +778,7 @@
                                         <td>${i.category}</td>
                                         <td>${i.location}</td>
                                         <td>${getStatusBadge(i.status, 'issue')}</td>
-                                        <td>${i.file_url ? `<img src="${i.file_url}" alt="Issue photo" style="max-width: 100px; max-height: 100px; cursor: pointer;" onclick="window.open('${i.file_url}', '_blank')">` : '<span class="text-muted">No photo</span>'}</td>
+                                        <td>${i.file_url ? `<img src="${i.file_url}" alt="Issue photo" style="max-width: 100px; max-height: 100px; cursor: pointer; object-fit: cover; border-radius: 4px;" onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<span class=\\'text-muted\\'>Photo unavailable</span>';" onclick="window.open('${i.file_url}', '_blank')">` : '<span class="text-muted">No photo</span>'}</td>
                                         <td>${formatDate(i.created_at)}</td>
                                     </tr>
                                 `).join('')}
@@ -1398,32 +1388,6 @@
                 loadDashboard(); // Refresh dashboard to update employment status
             } catch (error) {
                 showAlert(error.message, 'error');
-            }
-        }
-
-        // Chatbot
-        function toggleChatbot() {
-            document.getElementById('chatbotWindow').classList.toggle('active');
-        }
-
-        async function sendChatbotMessage() {
-            const input = document.getElementById('chatbotInput');
-            const message = input.value.trim();
-            if (!message) return;
-
-            const messagesDiv = document.getElementById('chatbotMessages');
-            messagesDiv.innerHTML += `<div class="message user">${message}</div>`;
-            input.value = '';
-
-            try {
-                const response = await apiRequest('/chatbot/chat', {
-                    method: 'POST',
-                    body: JSON.stringify({ message })
-                });
-                messagesDiv.innerHTML += `<div class="message bot">${response.response}</div>`;
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
-            } catch (error) {
-                messagesDiv.innerHTML += `<div class="message bot">Sorry, I couldn't process that request.</div>`;
             }
         }
 
