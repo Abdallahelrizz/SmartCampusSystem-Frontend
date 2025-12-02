@@ -1,6 +1,9 @@
 // Authentication utilities
 // API_BASE_URL is set in config.js or via window.API_BASE_URL
-const API_BASE = window.API_BASE_URL || '/api';
+// Use a function to get the current API_BASE_URL dynamically
+function getApiBase() {
+    return window.API_BASE_URL || '/api';
+}
 
 function getAuthToken() {
     return localStorage.getItem('token');
@@ -43,6 +46,7 @@ function getAuthHeaders() {
 }
 
 async function apiRequest(endpoint, options = {}) {
+    const API_BASE = getApiBase();
     const url = `${API_BASE}${endpoint}`;
     const isFormData = options.body instanceof FormData;
     
